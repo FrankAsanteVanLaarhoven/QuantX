@@ -52,9 +52,9 @@ export function GlassSidebar({ onSpawnPanel }: GlassSidebarProps) {
         <div className="absolute top-0 left-0 w-full h-32 bg-sky-500/10 blur-[50px] pointer-events-none" />
         
         <div className="p-6 pb-2 border-b border-white/[0.05] flex items-center justify-between">
-            <div className="flex items-center gap-3 text-sky-400 font-bold text-xl tracking-widest">
-              <QuantXLogo size={32} className="text-white drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
-              <span className={`transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>QUANT<span className="text-white">X</span></span>
+            <div className="flex items-center gap-3 text-white font-bold text-xl tracking-widest">
+              <QuantXLogo size={32} className="text-red-600 drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]" />
+              <span className={`transition-opacity duration-300 tracking-tighter ${isHovered ? 'opacity-100' : 'opacity-0'}`}>QUANT<span className="font-light text-red-600">X</span></span>
             </div>
         </div>
 

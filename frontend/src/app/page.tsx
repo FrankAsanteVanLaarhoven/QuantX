@@ -207,9 +207,12 @@ export default function Home() {
                 </div>
              </div>
              <div className="flex flex-col items-start gap-0 relative -left-2 mb-6">
-                 <QuantXLogo size={70} className="text-white drop-shadow-[0_0_20px_rgba(56,189,248,0.3)] mb-1" />
-                 <h1 className="text-3xl font-bold bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent ml-2 tracking-tight">QuantX Sentinel</h1>
-                 <p className="text-white/40 text-sm ml-2 tracking-wide font-medium">Enterprise Omniscient Architecture</p>
+                 <QuantXLogo size={70} className="text-red-500 drop-shadow-[0_0_30px_rgba(239,68,68,0.3)] mb-1" />
+                 <h1 className="text-3xl font-medium tracking-tighter text-white ml-2 flex items-baseline gap-1">
+                   QUANT<span className="font-light text-red-500">X</span>
+                   <span className="text-sm font-mono tracking-widest text-white/30 ml-2 uppercase">Sentinel</span>
+                 </h1>
+                 <p className="text-white/30 text-[10px] uppercase font-mono ml-2 tracking-[0.2em] mt-1">Enterprise Omniscient Architecture</p>
              </div>
 
              <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4">
