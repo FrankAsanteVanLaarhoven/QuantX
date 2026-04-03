@@ -344,6 +344,10 @@ def autonomous_cognitive_analysis(ticker: str, smoothing_factor: float = 1e-4):
         }}
         """
 
+        if not GEMINI_API_KEY:
+            return {"error": "Missing GEMINI_API_KEY for cognitive analysis."}
+            
+        client = genai.Client(api_key=GEMINI_API_KEY)
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,
