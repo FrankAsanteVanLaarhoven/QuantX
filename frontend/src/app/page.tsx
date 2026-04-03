@@ -252,7 +252,7 @@ export default function Home() {
                      <label className="text-[9px] uppercase tracking-[0.2em] text-white/30 mb-2 block font-mono bg-black inline-block pr-2 relative z-10 transition-colors group-focus-within:text-red-400">Identification Code</label>
                      <input 
                        type="text" 
-                       className="w-full bg-transparent border-b border-white/10 px-0 py-2 text-white text-lg font-light tracking-wide outline-none focus:border-red-500 transition-colors placeholder:text-white/10"
+                       className="w-full bg-transparent border-b border-white/10 px-0 py-2 text-white text-lg font-light tracking-wide outline-none focus:border-red-500 transition-colors placeholder:text-white/10 [&:-webkit-autofill]:bg-transparent [&:-webkit-autofill]:text-white [&:-webkit-autofill]:shadow-[0_0_0_1000px_black_inset] [&:-webkit-autofill]:-webkit-text-fill-color-white"
                        placeholder="Enter assigned ID..."
                        value={authForm.username}
                        onChange={(e) => setAuthForm({...authForm, username: e.target.value})}
@@ -263,7 +263,7 @@ export default function Home() {
                      <label className="text-[9px] uppercase tracking-[0.2em] text-white/30 mb-2 block font-mono bg-black inline-block pr-2 relative z-10 transition-colors group-focus-within:text-red-400">Root Cryptography Key</label>
                      <input 
                        type="password" 
-                       className="w-full bg-transparent border-b border-white/10 px-0 py-2 text-white text-lg outline-none focus:border-red-500 transition-colors tracking-[0.5em] font-mono placeholder:text-white/10 placeholder:tracking-normal"
+                       className="w-full bg-transparent border-b border-white/10 px-0 py-2 text-white text-lg outline-none focus:border-red-500 transition-colors tracking-[0.5em] font-mono placeholder:text-white/10 placeholder:tracking-normal [&:-webkit-autofill]:bg-transparent [&:-webkit-autofill]:text-white [&:-webkit-autofill]:shadow-[0_0_0_1000px_black_inset] [&:-webkit-autofill]:-webkit-text-fill-color-white"
                        placeholder="••••••••••••"
                        value={authForm.pin}
                        onChange={(e) => setAuthForm({...authForm, pin: e.target.value})}
@@ -277,9 +277,8 @@ export default function Home() {
                      </button>
 
                      <button type="submit" disabled={loading} className="relative overflow-hidden group bg-white text-black px-8 py-3 rounded-none text-xs font-bold tracking-[0.2em] uppercase transition hover:bg-gray-200 disabled:opacity-50">
-                       <span className="relative z-10">{loading ? 'Verifying...' : (authMode === 'login' ? 'Initialize' : 'Provision')}</span>
-                       <div className="absolute inset-0 bg-red-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0" />
-                       <span className="relative z-10 group-hover:text-white transition-colors duration-300">{loading ? 'Verifying...' : (authMode === 'login' ? 'Initialize' : 'Provision')}</span>
+                       <span className="relative z-10 transition-colors duration-300 group-hover:text-white">{loading ? 'Verifying...' : (authMode === 'login' ? 'Initialize' : 'Provision')}</span>
+                       <div className="absolute inset-0 bg-red-600 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300 ease-in-out z-0" />
                      </button>
                   </div>
                </form>
