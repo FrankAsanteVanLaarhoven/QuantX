@@ -29,6 +29,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import functools
+
 # -------------------------------------------------------------
 # NVIDIA SOTA Simulator Decorator (Inference Wrapper)
 # -------------------------------------------------------------
@@ -37,6 +39,7 @@ def nvidia_accelerated(func):
     Simulates integration with NVIDIA Triton / TensorRT for Capital Markets.
     Measures processing time down to microseconds and flags the engine used.
     """
+    @functools.wraps(func)
     async def wrapper(*args, **kwargs):
         start_time = time.perf_counter()
         result = await func(*args, **kwargs) if __import__('asyncio').iscoroutinefunction(func) else func(*args, **kwargs)
