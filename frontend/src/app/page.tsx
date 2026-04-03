@@ -195,61 +195,100 @@ export default function Home() {
         <div className="absolute inset-0 opacity-[0.015] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
 
-      {!isAuthenticated ? (
-        <div className="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/40">
-          <div className="w-[450px] bg-black/60 border border-white/10 rounded-2xl p-8 shadow-[0_0_80px_rgba(14,165,233,0.1)] relative overflow-hidden">
-             
-             {/* SOTA Download Badge */}
-             <div className="absolute top-4 right-4 group cursor-pointer" title="Download Desktop SDK (.exe / .dmg)">
-                <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition">
-                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400 mb-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                   <span className="text-[8px] font-bold tracking-widest text-emerald-400">SDK</span>
-                </div>
-             </div>
-             <div className="flex flex-col items-start gap-0 relative -left-2 mb-6">
-                 <QuantXLogo size={70} className="text-red-500 drop-shadow-[0_0_30px_rgba(239,68,68,0.3)] mb-1" />
-                 <h1 className="text-3xl font-medium tracking-tighter text-white ml-2 flex items-baseline gap-1">
-                   QUANT<span className="font-light text-red-500">X</span>
-                   <span className="text-sm font-mono tracking-widest text-white/30 ml-2 uppercase">Sentinel</span>
-                 </h1>
-                 <p className="text-white/30 text-[10px] uppercase font-mono ml-2 tracking-[0.2em] mt-1">Enterprise Omniscient Architecture</p>
-             </div>
+      <AnimatePresence>
+        {!isAuthenticated && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, filter: "blur(20px)", scale: 1.1 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            className="absolute inset-0 z-50 flex items-center justify-center bg-black overflow-hidden"
+          >
+            {/* Monumental architectural grid overlay background */}
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] z-0 mix-blend-overlay pointer-events-none" />
+            <motion.div 
+               initial={{ backgroundPosition: "0px 0px" }}
+               animate={{ backgroundPosition: "40px 40px" }}
+               transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+               className="absolute inset-0 opacity-10 pointer-events-none" 
+               style={{ backgroundImage: "linear-gradient(to right, #333 1px, transparent 1px), linear-gradient(to bottom, #333 1px, transparent 1px)", backgroundSize: "40px 40px" }}
+            />
+            
+            {/* Horizontal striking architectural laser line */}
+            <motion.div 
+               initial={{ scaleX: 0, opacity: 0 }}
+               animate={{ scaleX: 1, opacity: 0.2 }}
+               transition={{ duration: 1.5, delay: 0.5, ease: "circOut" }}
+               className="absolute top-[35%] w-full h-[1px] bg-gradient-to-r from-transparent via-red-500 to-transparent z-0 origin-left"
+            />
 
-             <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4">
-                <div>
-                   <label className="text-[10px] uppercase tracking-widest text-white/50 mb-1 block">Institutional ID</label>
-                   <input 
-                     type="text" 
-                     className="w-full bg-white/5 border border-white/10 rounded px-4 py-2.5 text-white text-sm outline-none focus:border-sky-500/50 focus:bg-white/10 transition"
-                     value={authForm.username}
-                     onChange={(e) => setAuthForm({...authForm, username: e.target.value})}
-                     required
-                   />
-                </div>
-                <div>
-                   <label className="text-[10px] uppercase tracking-widest text-white/50 mb-1 block">Root Pin</label>
-                   <input 
-                     type="password" 
-                     className="w-full bg-white/5 border border-white/10 rounded px-4 py-2.5 text-white text-sm outline-none focus:border-sky-500/50 focus:bg-white/10 transition tracking-widest font-mono font-bold"
-                     value={authForm.pin}
-                     onChange={(e) => setAuthForm({...authForm, pin: e.target.value})}
-                     required
-                   />
-                </div>
+            <motion.div 
+              initial={{ y: 40, opacity: 0, filter: "blur(10px)" }}
+              animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+              transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+              className="w-[480px] bg-black/80 backdrop-blur-2xl border border-white/5 p-10 z-10 relative"
+            >
+               {/* SOTA Download Badge */}
+               <div className="absolute top-6 right-6 group cursor-pointer" title="Download Desktop SDK (.exe / .dmg)">
+                  <div className="flex flex-col items-center justify-center p-2 rounded bg-white/[0.02] border border-white/10 hover:border-red-500/50 hover:bg-red-500/5 transition-all duration-300">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/50 group-hover:text-red-400 mb-1 transition-colors"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                     <span className="text-[7px] font-bold tracking-[0.3em] text-white/40 group-hover:text-red-400 transition-colors uppercase">SDK</span>
+                  </div>
+               </div>
 
-                <div className="flex justify-between items-center mt-4">
-                   <button type="button" onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')} className="text-xs text-sky-400 hover:text-sky-300 transition underline underline-offset-4">
-                     {authMode === 'login' ? 'Request Allocation (Register)' : 'Execute Bypass (Login)'}
-                   </button>
+               <div className="flex flex-col items-start gap-0 relative -left-2 mb-10">
+                   <QuantXLogo size={80} className="text-red-600 drop-shadow-[0_0_30px_rgba(220,38,38,0.5)] mb-2" />
+                   <h1 className="text-4xl font-medium tracking-tighter text-white ml-2 flex items-baseline gap-1">
+                     QUANT<span className="font-light text-red-600">X</span>
+                   </h1>
+                   <div className="flex items-center gap-2 mt-1 ml-2">
+                     <div className="w-1 h-1 bg-red-600 rounded-full animate-pulse" />
+                     <p className="text-white/40 text-[9px] uppercase font-mono tracking-[0.3em]">Sentinel Autonomous Engine</p>
+                   </div>
+               </div>
 
-                   <button type="submit" disabled={loading} className="bg-sky-500/20 text-sky-400 border border-sky-500/30 px-6 py-2.5 rounded text-sm font-bold tracking-widest uppercase hover:bg-sky-500/30 transition disabled:opacity-50">
-                     {loading ? 'Validating...' : (authMode === 'login' ? 'Enter' : 'Create')}
-                   </button>
-                </div>
-             </form>
-          </div>
-        </div>
-      ) : (
+               <form onSubmit={handleAuthSubmit} className="flex flex-col gap-6">
+                  <div className="relative group">
+                     <label className="text-[9px] uppercase tracking-[0.2em] text-white/30 mb-2 block font-mono bg-black inline-block pr-2 relative z-10 transition-colors group-focus-within:text-red-400">Identification Code</label>
+                     <input 
+                       type="text" 
+                       className="w-full bg-transparent border-b border-white/10 px-0 py-2 text-white text-lg font-light tracking-wide outline-none focus:border-red-500 transition-colors placeholder:text-white/10"
+                       placeholder="Enter assigned ID..."
+                       value={authForm.username}
+                       onChange={(e) => setAuthForm({...authForm, username: e.target.value})}
+                       required
+                     />
+                  </div>
+                  <div className="relative group mt-2">
+                     <label className="text-[9px] uppercase tracking-[0.2em] text-white/30 mb-2 block font-mono bg-black inline-block pr-2 relative z-10 transition-colors group-focus-within:text-red-400">Root Cryptography Key</label>
+                     <input 
+                       type="password" 
+                       className="w-full bg-transparent border-b border-white/10 px-0 py-2 text-white text-lg outline-none focus:border-red-500 transition-colors tracking-[0.5em] font-mono placeholder:text-white/10 placeholder:tracking-normal"
+                       placeholder="••••••••••••"
+                       value={authForm.pin}
+                       onChange={(e) => setAuthForm({...authForm, pin: e.target.value})}
+                       required
+                     />
+                  </div>
+
+                  <div className="flex justify-between items-center mt-8">
+                     <button type="button" onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')} className="text-[10px] uppercase font-mono tracking-widest text-white/40 hover:text-white transition">
+                       {authMode === 'login' ? 'Request Genesis Access' : 'Authenticate Override'}
+                     </button>
+
+                     <button type="submit" disabled={loading} className="relative overflow-hidden group bg-white text-black px-8 py-3 rounded-none text-xs font-bold tracking-[0.2em] uppercase transition hover:bg-gray-200 disabled:opacity-50">
+                       <span className="relative z-10">{loading ? 'Verifying...' : (authMode === 'login' ? 'Initialize' : 'Provision')}</span>
+                       <div className="absolute inset-0 bg-red-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0" />
+                       <span className="relative z-10 group-hover:text-white transition-colors duration-300">{loading ? 'Verifying...' : (authMode === 'login' ? 'Initialize' : 'Provision')}</span>
+                     </button>
+                  </div>
+               </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {isAuthenticated && (
         <>
           {/* Ephemeral UI Layer (Z=10) */}
       <div className="absolute inset-0 z-10 pointer-events-none">
