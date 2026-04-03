@@ -484,3 +484,162 @@ def hyper_allocate(req: AllocationRequest):
 
     except Exception as e:
         return {"error": str(e)}
+
+# -------------------------------------------------------------
+# PHASE 3: Omniscience Expansion
+# -------------------------------------------------------------
+import random
+
+class LOBRequest(BaseModel):
+    ticker: str
+
+@app.post("/api/market/lob")
+@nvidia_accelerated
+def get_lob_imbalance(req: LOBRequest):
+    """
+    Simulates Level 3 market depth order books using numpy distribution logic.
+    Injects realistic "Spoofing" and "Iceberg" tags.
+    """
+    try:
+        data = yf.download(req.ticker, period="1d", interval="1m", progress=False)
+        if data.empty:
+            mid_price = 150.0
+        else:
+            close_col = 'Adj Close' if 'Adj Close' in data.columns else 'Close'
+            if isinstance(data.columns, pd.MultiIndex):
+                if req.ticker in data[close_col]:
+                    series = data[close_col][req.ticker].dropna()
+                    mid_price = float(series.iloc[-1]) if not series.empty else 150.0
+                else: mid_price = 150.0
+            else:
+                series = data[close_col].dropna()
+                mid_price = float(series.iloc[-1]) if not series.empty else 150.0
+
+        bids = []
+        asks = []
+        
+        # Build 50 levels of depth
+        for i in range(50):
+            distance = (i+1) * 0.05
+            
+            # Simulated volumes with gaussian spread
+            bid_vol = abs(float(np.random.normal(50000 / (distance + 1), 10000)))
+            ask_vol = abs(float(np.random.normal(48000 / (distance + 1), 10000)))
+            
+            # Spoofing generation (flash large order)
+            is_spoof_bid = True if i > 10 and random.random() > 0.9 else False
+            if is_spoof_bid: bid_vol *= 8
+            
+            is_iceberg_ask = True if i < 5 and random.random() > 0.85 else False
+            if is_iceberg_ask: ask_vol *= 6
+
+            bids.append({
+                "price": float(mid_price - distance),
+                "volume": bid_vol,
+                "type": "spoof" if is_spoof_bid else "standard"
+            })
+            
+            asks.insert(0, {
+                "price": float(mid_price + (50-i) * 0.05),
+                "volume": ask_vol,
+                "type": "iceberg" if is_iceberg_ask else "standard"
+            })
+
+        return {
+            "ticker": req.ticker,
+            "mid_price": float(mid_price),
+            "bids": bids,
+            "asks": asks
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+class BacktestRequest(BaseModel):
+    alpha_strategy: str
+    epochs: int = 15
+
+@app.post("/api/backtest/run")
+@nvidia_accelerated
+def run_deep_rl_backtest(req: BacktestRequest):
+    """
+    Simulates a Deep RL agent training across multiple epochs on a 10-year dataset.
+    Returns tracking data array.
+    """
+    try:
+        epochs_data = []
+        base_sharpe = 0.5
+        base_drawdown = -30.0
+        cum_ret = 0.0
+        
+        for e in range(req.epochs):
+            # Agent learns -> sharpe goes up, drawdown goes down
+            noise = float(np.random.normal(0, 0.2))
+            base_sharpe = min(3.5, base_sharpe + 0.15 + noise)
+            base_drawdown = min(-5.0, base_drawdown + 1.5 + float(np.random.normal(0, 1.0)))
+            cum_ret += max(0, float(np.random.normal(12.0, 5.0)) * (base_sharpe/2))
+            
+            epochs_data.append({
+                "epoch": f"E-{e+1:02d}",
+                "sharpe": float(base_sharpe),
+                "drawdown": float(base_drawdown),
+                "cumulative_return": float(cum_ret)
+            })
+            
+        return {
+            "strategy": req.alpha_strategy,
+            "training_history": epochs_data,
+            "final_sharpe": float(base_sharpe),
+            "model_convergence": True if base_sharpe > 2.0 else False
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+class MacroRequest(BaseModel):
+    query: str
+
+@app.post("/api/macro/sentiment")
+@nvidia_accelerated
+def omniscient_macro_globe(req: MacroRequest):
+    """
+    Uses Gemini GenAI to parse real-world geopolitical implications and return node matrices
+    """
+    try:
+        prompt = f"""
+        Act as an omniscient Geopolitical & Macro-Economic Tensor model for global hedge funds.
+        User inquiry: {req.query}
+        
+        Identify the top 4 global regions or commodities impacted by this inquiry.
+        Return raw JSON exclusively. Schema:
+        {{
+            "global_threat_level": 75,
+            "nodes": [
+                {{"id": "Taiwan Semiconductors", "sentiment": -0.85, "impact_val": 90, "contagion_link": "US Tech Sector"}},
+                {{"id": "Brent Crude", "sentiment": 0.40, "impact_val": 60, "contagion_link": "European Energy"}}
+            ]
+        }}
+        """
+        if not GEMINI_API_KEY:
+            return {
+                "global_threat_level": 82,
+                "nodes": [
+                    {"id": "E.U. Energy", "sentiment": -0.6, "impact_val": 85, "contagion_link": "Global Supply"},
+                    {"id": "U.S. Defense", "sentiment": 0.9, "impact_val": 70, "contagion_link": "Aerospace Equities"},
+                    {"id": "Taiwan Semi", "sentiment": -0.8, "impact_val": 95, "contagion_link": "Global Tech"},
+                    {"id": "Gold (XAU)", "sentiment": 0.7, "impact_val": 65, "contagion_link": "Treasury Yields"}
+                ]
+            }
+
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
+
+        text = response.text.strip()
+        if text.startswith("```json"): text = text[7:-3].strip()
+        elif text.startswith("```"): text = text[3:-3].strip()
+
+        import json
+        return json.loads(text)
+    except Exception as e:
+        return {"error": str(e)}

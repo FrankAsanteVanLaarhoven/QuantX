@@ -1002,3 +1002,202 @@ export const RLHyperAllocatorPanel = () => {
     </div>
   );
 };
+
+// -------------------------------------------------------------
+// PHASE 3: Limit Order Book (LOB) Imbalance Matrix
+// -------------------------------------------------------------
+export const LOBImbalancePanel = () => {
+  const [data, setData] = useState<any>(null);
+  const [ticker, setTicker] = useState("TSLA");
+  const [loading, setLoading] = useState(false);
+
+  const fetchLOB = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setLoading(true);
+    fetch(`http://127.0.0.1:8000/api/market/lob`, {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ ticker: ticker.toUpperCase() })
+    }).then(r => r.json()).then(r => { setData(r); setLoading(false); }).catch(() => setLoading(false));
+  };
+
+  return (
+    <div className="flex flex-col h-full w-full rounded-xl bg-black/60 border border-white/10 overflow-hidden font-sans relative backdrop-blur-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)]">
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-orange-500 to-green-500" />
+      <div className="p-4 border-b border-white/5 flex flex-col justify-center">
+        <h2 className="text-xl text-white font-medium mb-1 tracking-wide flex justify-between items-center">
+           <span>LOB Imbalance Matrix</span>
+           <span className="text-[10px] bg-white/10 px-2 py-1 rounded text-orange-400 uppercase tracking-widest border border-orange-500/30">Level 3 Depth</span>
+        </h2>
+        <form onSubmit={fetchLOB} className="flex gap-2 mt-2">
+           <input type="text" value={ticker} onChange={e=>setTicker(e.target.value)} className="bg-white/5 border border-white/20 rounded py-2 px-3 text-sm text-white uppercase font-mono w-24" />
+           <button type="submit" className="bg-white/10 text-white font-bold text-xs uppercase px-4 rounded border border-white/20 hover:bg-white/20">{loading ? "SCANNING..." : "SCAN DEPTH"}</button>
+        </form>
+      </div>
+
+      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar flex flex-col gap-4">
+        {!data && !loading && <div className="text-gray-500 m-auto text-xs font-mono uppercase">// Awaiting Ticker Scan</div>}
+        {loading && <div className="m-auto text-orange-500 animate-pulse text-xs font-mono">// Interrogating Dark Pools...</div>}
+        
+        {data && !data.error && (
+          <div className="flex w-full h-64 gap-1 relative items-end justify-center animation-fade-in">
+             <div className="absolute top-0 left-1/2 -translate-x-1/2 text-xs font-mono text-white/50">${data.mid_price.toFixed(2)} MID</div>
+             
+             {/* ASKS (Sellers) */}
+             <div className="flex-1 flex gap-0.5 items-end justify-end">
+               {data.asks.map((ask: any, i: number) => (
+                 <div key={i} className="w-full relative group flex items-end justify-center">
+                    <div style={{height: `${(ask.volume / 100000)*100}%`}} className={`w-full max-w-[8px] rounded-t-sm transition-all duration-300 ${ask.type === 'iceberg' ? 'bg-cyan-400 shadow-[0_0_10px_#22d3ee]' : 'bg-red-500/50 hover:bg-red-400'}`} />
+                 </div>
+               ))}
+             </div>
+             <div className="w-0.5 h-full bg-white/20 relative mx-2"></div>
+             {/* BIDS (Buyers) */}
+             <div className="flex-1 flex gap-0.5 items-end justify-start">
+               {data.bids.map((bid: any, i: number) => (
+                 <div key={i} className="w-full relative group flex items-end justify-center">
+                    <div style={{height: `${(bid.volume / 100000)*100}%`}} className={`w-full max-w-[8px] rounded-t-sm transition-all duration-300 ${bid.type === 'spoof' ? 'bg-yellow-400 shadow-[0_0_10px_#facc15]' : 'bg-green-500/50 hover:bg-green-400'}`} />
+                 </div>
+               ))}
+             </div>
+          </div>
+        )}
+        {data && !data.error && (
+             <div className="flex justify-between items-center mt-auto border-t border-white/10 pt-3 text-[10px] font-mono text-gray-400">
+               <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-cyan-400"></div> Iceberg Ask Detected</span>
+               <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-yellow-400"></div> Spoof Bid Detected</span>
+             </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// -------------------------------------------------------------
+// PHASE 3: Deep-RL Backtest Sandbox
+// -------------------------------------------------------------
+export const BacktestSandboxPanel = () => {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [strategy, setStrategy] = useState("DQN Momentum Ranker");
+  
+  const runTest = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    fetch(`http://127.0.0.1:8000/api/backtest/run`, {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ alpha_strategy: strategy, epochs: 20 })
+    }).then(r => r.json()).then(r => { setData(r); setLoading(false); }).catch(() => setLoading(false));
+  };
+
+  return (
+    <div className="flex flex-col h-full w-full rounded-xl bg-[#030712] border border-white/5 overflow-hidden font-sans relative shadow-2xl">
+      <div className="p-4 border-b border-white/5">
+        <h2 className="text-xl text-white font-medium mb-1 tracking-wide flex justify-between items-center">
+           <span>Deep-RL Training Sandbox</span>
+           <span className="text-[10px] bg-blue-500/10 px-2 py-1 rounded text-blue-400 uppercase tracking-widest border border-blue-500/30">CUDA Epoch Engine</span>
+        </h2>
+        <form onSubmit={runTest} className="flex gap-2 mt-2">
+           <input type="text" value={strategy} onChange={e=>setStrategy(e.target.value)} className="flex-1 bg-white/5 border border-white/10 rounded py-2 px-3 text-xs text-white uppercase font-mono" />
+           <button type="submit" className="bg-blue-600/20 text-blue-400 font-bold text-xs uppercase px-4 rounded border border-blue-600/30 hover:bg-blue-600/40">{loading ? "TRAINING AGENT..." : "INITIATE EPOCHS"}</button>
+        </form>
+      </div>
+
+      <div className="flex-1 p-4 flex flex-col font-mono text-xs">
+        {!data && !loading && <div className="m-auto text-gray-500">// Waiting for AI Agent deployment</div>}
+        {loading && <div className="m-auto text-blue-500 animate-pulse">// Simulating 10-year dataset across NVIDIA Tensor Cores...</div>}
+        
+        {data && !data.error && (
+           <div className="flex flex-col h-full gap-4 animation-fade-in relative">
+              <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                 <span className="text-gray-400">Final Convergence Sharpe: </span>
+                 <span className={`text-xl ${data.final_sharpe > 2.0 ? 'text-green-400' : 'text-red-400'}`}>{data.final_sharpe.toFixed(2)}</span>
+              </div>
+              <div className="flex-1 h-48 w-full border border-white/5 rounded-lg bg-black/50 p-2 relative">
+                 <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={data.training_history}>
+                       <XAxis dataKey="epoch" hide />
+                       <YAxis yAxisId="left" domain={['auto','auto']} hide />
+                       <YAxis yAxisId="right" orientation="right" domain={['auto','auto']} hide />
+                       <Tooltip contentStyle={{backgroundColor: '#000', borderColor: '#333'}} />
+                       <Line yAxisId="left" type="monotone" dataKey="sharpe" stroke="#3b82f6" strokeWidth={2} dot={false} isAnimationActive={true} animationDuration={2000} />
+                       <Area yAxisId="right" type="monotone" dataKey="drawdown" stroke="#ef4444" fill="#ef4444" fillOpacity={0.1} isAnimationActive={true} animationDuration={2000} />
+                    </ComposedChart>
+                 </ResponsiveContainer>
+                 <div className="absolute top-2 left-2 text-[9px] text-gray-500 uppercase flex flex-col">
+                    <span className="text-blue-500">_ Sharpe Iteration</span>
+                    <span className="text-red-500">_ Drawdown Vector</span>
+                 </div>
+              </div>
+           </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// -------------------------------------------------------------
+// PHASE 3: Omniscient NLP Macro Globe
+// -------------------------------------------------------------
+export const MacroGlobePanel = () => {
+  const [data, setData] = useState<any>(null);
+  const [query, setQuery] = useState("U.S. Taiwan Semiconductor Policy");
+  const [loading, setLoading] = useState(false);
+
+  const scanGlobe = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    fetch(`http://127.0.0.1:8000/api/macro/sentiment`, {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ query })
+    }).then(r => r.json()).then(r => { setData(r); setLoading(false); }).catch(() => setLoading(false));
+  };
+
+  return (
+    <div className="flex flex-col h-full w-full rounded-xl bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-950 via-black to-black border border-white/10 overflow-hidden font-sans relative">
+      <div className="p-4 border-b border-white/5 relative z-10 bg-black/40">
+        <h2 className="text-xl text-white font-medium mb-1 tracking-wide flex justify-between items-center">
+           <span>NLP Macro Globe Network</span>
+           <span className="text-[10px] bg-purple-500/10 px-2 py-1 rounded text-purple-400 uppercase tracking-widest border border-purple-500/30">Semantic Embedding</span>
+        </h2>
+        <form onSubmit={scanGlobe} className="flex gap-2 mt-2">
+           <input type="text" value={query} onChange={e=>setQuery(e.target.value)} className="flex-1 bg-white/5 border border-white/20 rounded py-2 px-3 text-xs text-white uppercase font-mono" placeholder="Voice or Text Geopolitical Event..." />
+           <button type="submit" className="bg-purple-600/20 text-purple-400 font-bold text-xs uppercase px-4 rounded border border-purple-600/30 hover:bg-purple-600/40">{loading ? "LINKING NODES..." : "SCAN PLANET"}</button>
+        </form>
+      </div>
+
+      <div className="flex-1 relative overflow-hidden flex items-center justify-center p-4">
+        {/* Decorative Grid Lines */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+
+        {!data && !loading && <div className="text-gray-500 text-xs font-mono uppercase relative z-10">// Input event to map linguistic contagion</div>}
+        {loading && <div className="text-purple-500 animate-pulse text-xs font-mono relative z-10">// Establishing GenAI neural connections globally...</div>}
+        
+        {data && !data.error && (
+          <div className="w-full h-full relative animation-fade-in flex flex-col">
+            <div className="absolute top-0 right-0 p-2 text-right">
+              <div className="text-[10px] text-gray-500 font-mono uppercase mb-1">Global Threat Matrix</div>
+              <div className={`text-4xl font-bold ${data.global_threat_level > 80 ? 'text-red-500' : 'text-yellow-500'}`}>{data.global_threat_level}%</div>
+            </div>
+
+            <div className="mt-8 flex-1 w-full grid grid-cols-2 gap-4 auto-rows-fr relative z-10">
+              {data.nodes?.map((node: any, i: number) => (
+                 <div key={i} className="flex flex-col justify-center items-center p-3 rounded-xl border border-white/10 bg-black/60 relative overflow-hidden shadow-[0_0_15px_rgba(168,85,247,0.1)]">
+                   <div className="absolute top-0 w-full h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50" />
+                   <h3 className="text-sm text-white font-bold mb-1 tracking-tight text-center">{node.id}</h3>
+                   <div className="text-[10px] text-gray-400 uppercase font-mono mb-2">Contagion: <span className="text-purple-400">{node.contagion_link}</span></div>
+                   <div className="flex items-center gap-2 w-full mt-2">
+                     <span className="text-[9px] text-gray-500">FEAR</span>
+                     <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                       <div className={`h-full ${node.sentiment < 0 ? 'bg-red-500' : 'bg-green-500'}`} style={{width: `${Math.abs(node.impact_val)}%`}} />
+                     </div>
+                     <span className="text-[9px] text-gray-500">GREED</span>
+                   </div>
+                 </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

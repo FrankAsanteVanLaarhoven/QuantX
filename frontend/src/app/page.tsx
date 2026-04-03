@@ -9,7 +9,8 @@ import {
   SimulatePanel, DataPanel, AlphaTableFull, PortfolioPanel, StockTrackerPanel,
   DividendsPanel, ToolsPanel, LearnPanel, TeamPanel, CommunityPanel, EventsPanel,
   CompetitionsPanel, ChallengePanel, ConsultantPanel, ReferralPanel, AnnouncementsPanel, NotificationsPanel,
-  AutonomousSentinelPanel, RLHyperAllocatorPanel
+  AutonomousSentinelPanel, RLHyperAllocatorPanel,
+  LOBImbalancePanel, BacktestSandboxPanel, MacroGlobePanel
 } from '@/components/dashboard/Widgets';
 
 type ActivePanel = {
@@ -69,6 +70,9 @@ export default function Home() {
     if (q.includes('event')) spawnPanel('events', 'Upcoming Events');
     else if (q.includes('alpha')) spawnPanel('alphas', 'Alpha Signatures');
     else if (q.includes('allocate') || q.includes('portfolio')) spawnPanel('allocator', 'RL Portfolio Engine');
+    else if (q.includes('order') || q.includes('lob') || q.includes('imbalance')) spawnPanel('lob', 'Limit Order Matrix');
+    else if (q.includes('backtest') || q.includes('sandbox')) spawnPanel('backtest', 'Deep-RL Evaluator');
+    else if (q.includes('macro') || q.includes('globe') || q.includes('news')) spawnPanel('macro', 'Omniscient NLP Globe');
     else if (q.includes('challenge')) spawnPanel('challenge', 'Challenge Stats');
     else if (q.includes('simulate')) spawnPanel('simulate', 'Simulation Engine');
     else if (q.includes('data')) spawnPanel('data', 'Data Feeds');
@@ -89,6 +93,9 @@ export default function Home() {
       case 'community': return <CommunityPanel />;
       case 'portfolio': return <PortfolioPanel />;
       case 'allocator': return <RLHyperAllocatorPanel />;
+      case 'lob': return <LOBImbalancePanel />;
+      case 'backtest': return <BacktestSandboxPanel />;
+      case 'macro': return <MacroGlobePanel />;
       case 'stock': return <StockTrackerPanel />;
       case 'dividends': return <DividendsPanel />;
       case 'tools': return <ToolsPanel />;
