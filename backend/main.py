@@ -644,3 +644,76 @@ def omniscient_macro_globe(req: MacroRequest):
         return json.loads(text)
     except Exception as e:
         return {"error": str(e)}
+
+# -------------------------------------------------------------
+# PHASE 4: Telemetric WebSockets
+# -------------------------------------------------------------
+import random
+
+@app.websocket("/ws/telemetry")
+async def websocket_telemetry(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            payload = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "pulse_bpm": random.randint(120, 180),
+                "global_liquidity_vol": float(np.random.normal(5000000, 10000)),
+                "active_hft_nodes": random.randint(1000, 1050),
+                "latency_us": random.randint(800, 1200)
+            }
+            await websocket.send_json(payload)
+            await asyncio.sleep(0.05)
+    except WebSocketDisconnect:
+        pass
+
+# -------------------------------------------------------------
+# PHASE 5: Authentication Perimeter (SQLite)
+# -------------------------------------------------------------
+import sqlite3
+import hashlib
+
+def init_db():
+    conn = sqlite3.connect("quantx.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            pin_hash TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+init_db()
+
+class AuthData(BaseModel):
+    username: str
+    pin: str
+
+@app.post("/api/auth/register")
+async def register(user: AuthData):
+    pin_hash = hashlib.sha256(user.pin.encode()).hexdigest()
+    try:
+        conn = sqlite3.connect("quantx.db")
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO users (username, pin_hash) VALUES (?, ?)", (user.username, pin_hash))
+        conn.commit()
+        conn.close()
+        return {"status": "success", "message": "Institutional ID Registered"}
+    except sqlite3.IntegrityError:
+        raise HTTPException(status_code=400, detail="Username already exists")
+
+@app.post("/api/auth/login")
+async def login(user: AuthData):
+    pin_hash = hashlib.sha256(user.pin.encode()).hexdigest()
+    conn = sqlite3.connect("quantx.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE username = ? AND pin_hash = ?", (user.username, pin_hash))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        return {"status": "success", "token": f"SDK_SOTA_{uuid.uuid4()}"}
+    else:
+        raise HTTPException(status_code=401, detail="Invalid Institutional Credentials")

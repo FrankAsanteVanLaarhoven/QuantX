@@ -1256,3 +1256,79 @@ export const AlgorithmicNexusPanel = () => {
       </div>
     );
 };
+
+// -------------------------------------------------------------
+// PHASE 5: WebRTC Hoot-and-Holler Comms (Mesh Network)
+// -------------------------------------------------------------
+export const WebRTCHootPanel = () => {
+    const videoRef = React.useRef<HTMLVideoElement>(null);
+    const [streamActive, setStreamActive] = React.useState(false);
+    const [peers] = React.useState<string[]>(['SOTA-Node-01', 'QuantX-Alpha-09']);
+
+    React.useEffect(() => {
+        if (typeof window !== 'undefined' && navigator.mediaDevices) {
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => {
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                    setStreamActive(true);
+                }
+            })
+            .catch(err => {
+                console.error("WebRTC Error:", err);
+            });
+        }
+        
+        return () => {
+             // Cleanup tracks on unmount
+             if (videoRef.current && videoRef.current.srcObject) {
+                 const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+                 tracks.forEach(track => track.stop());
+             }
+        };
+    }, []);
+
+    return (
+      <div className="flex flex-col h-full w-full rounded-xl bg-black border border-white/20 overflow-hidden font-sans relative shadow-[0_0_50px_rgba(255,255,255,0.05)]">
+         <div className="p-4 border-b border-white/10 flex justify-between items-center bg-black/50 z-10">
+           <h2 className="text-xl text-white font-medium tracking-wide flex items-center gap-2">
+             <div className={`w-2 h-2 rounded-full ${streamActive ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`} />
+             <span>Hoot-and-Holler Network</span>
+             <span className="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded uppercase tracking-widest border border-red-500/30">Live Floor</span>
+           </h2>
+           <div className="text-xs text-white/50">{peers.length} Peers Connected</div>
+         </div>
+         
+         <div className="flex-1 p-4 grid grid-cols-2 gap-4 bg-black overflow-y-auto">
+            {/* Local Feed */}
+            <div className="relative rounded-lg overflow-hidden border border-white/10 bg-gray-900 group aspect-video">
+                <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover transition duration-700" />
+                <div className="absolute bottom-2 left-2 bg-black/80 px-2 py-1 rounded text-[10px] text-white">Local Node (You)</div>
+                {!streamActive && <div className="absolute inset-0 flex items-center justify-center text-white/30 text-xs">Requesting Camera...</div>}
+                
+                {/* Mesh Data Overlay */}
+                <div className="absolute top-2 right-2 text-[8px] bg-black/50 text-green-400 px-1 py-0.5 rounded font-mono">24ms Ping</div>
+            </div>
+
+            {/* Mock Peers */}
+            {peers.map((peer, i) => (
+                <div key={i} className="relative rounded-lg overflow-hidden border border-white/10 bg-gray-900 aspect-video flex items-center justify-center">
+                    <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+                    <div className="flex flex-col items-center">
+                        <div className="w-10 h-10 rounded-full bg-slate-800 border-2 border-green-500 overflow-hidden mb-2">
+                            <div className="w-full h-full bg-gradient-to-tr from-green-500/20 to-blue-500/20" />
+                        </div>
+                        <div className="text-xs text-white/70">{peer}</div>
+                        <div className="mt-1 flex items-center gap-1">
+                            {Array.from({length: 4}).map((_, j) => (
+                                <div key={j} className="w-1 h-3 bg-green-500 animate-pulse" style={{animationDelay: `${j * 0.2}s`}} />
+                            ))}
+                        </div>
+                    </div>
+                    <div className="absolute bottom-2 left-2 bg-black/80 px-2 py-1 rounded text-[10px] text-white">Encrypted UDP</div>
+                </div>
+            ))}
+         </div>
+      </div>
+    );
+};
