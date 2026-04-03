@@ -28,6 +28,7 @@ export const QuantXLogo = ({ className = "", size = 32 }: { className?: string, 
           loops the right lobe entirely, crosses down through the center,
           loops the top-left lobe, and stops at the bottom-left creating the signature gap.
         */}
+        {/* Outer Primary Loop (with gap) */}
         <path 
           d="M 28 68
              C 45 68, 55 32, 72 32
@@ -35,7 +36,20 @@ export const QuantXLogo = ({ className = "", size = 32 }: { className?: string, 
              C 55 68, 45 32, 28 32
              C 10 32, 10 68, 22 68"
           stroke="currentColor" 
-          strokeWidth="6" 
+          strokeWidth="5" 
+          strokeLinecap="round" 
+        />
+        
+        {/* Inner Nested Loop (scaled down, with structural opacity) */}
+        <path 
+          d="M 33 60
+             C 46 60, 54 40, 67 40
+             C 80 40, 80 60, 67 60
+             C 54 60, 46 40, 33 40
+             C 20 40, 20 60, 29 60"
+          stroke="currentColor" 
+          strokeWidth="3" 
+          strokeOpacity="0.5"
           strokeLinecap="round" 
         />
       </g>
