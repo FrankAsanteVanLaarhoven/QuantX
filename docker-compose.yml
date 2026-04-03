@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  backend-a100-engine:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    networks:
+      - quantx_net
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  frontend-spatial-os:
+    build:
+      context: ./frontend
+      dockerfile: ../Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_WS_URL=ws://backend-a100-engine:8000/ws/telemetry
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend-a100-engine
+    networks:
+      - quantx_net
+
+networks:
+  quantx_net:
+    driver: bridge

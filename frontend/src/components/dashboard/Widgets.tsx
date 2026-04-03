@@ -1201,3 +1201,58 @@ export const MacroGlobePanel = () => {
     </div>
   );
 };
+
+// -------------------------------------------------------------
+// PHASE 4: The Algorithmic Nexus
+// -------------------------------------------------------------
+export const AlgorithmicNexusPanel = () => {
+    return (
+      <div className="flex flex-col h-full w-full rounded-xl bg-black border border-white/20 overflow-hidden font-sans relative shadow-[0_0_50px_rgba(255,255,255,0.05)]">
+         <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+         <div className="p-4 border-b border-white/10 flex justify-between items-center relative z-10 bg-black/50">
+           <h2 className="text-xl text-white font-medium tracking-wide flex items-center gap-2">
+             <span>Algorithmic Nexus</span>
+             <span className="text-[9px] bg-white/10 px-2 py-0.5 rounded text-gray-300 uppercase tracking-widest border border-white/20">Node Editor</span>
+           </h2>
+           <button className="bg-emerald-500/20 text-emerald-400 font-bold text-xs uppercase px-4 py-1.5 rounded border border-emerald-500/30 hover:bg-emerald-500/40">COMPILE PYTHON</button>
+         </div>
+  
+         <div className="flex-1 relative overflow-hidden flex z-10">
+           {/* SVG Splines connecting nodes */}
+           <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{zIndex: -1}}>
+             <path d="M 120 150 C 200 150, 200 100, 280 100" stroke="#3b82f6" strokeWidth="2" fill="none" className="animate-pulse" />
+             <path d="M 400 100 C 480 100, 480 200, 560 200" stroke="#a855f7" strokeWidth="2" fill="none" className="animate-pulse" />
+             <path d="M 120 250 C 200 250, 400 250, 560 200" stroke="#22c55e" strokeWidth="2" fill="none" opacity="0.5" />
+           </svg>
+  
+           {/* Mock Nodes */}
+           <div className="absolute top-[130px] left-[20px] w-24 bg-black/80 border border-blue-500/50 rounded p-2 text-[10px] text-white shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+             <div className="font-bold text-blue-400 mb-1 border-b border-white/10 pb-1">Price Signal</div>
+             <div className="text-gray-400">Stream: ws://hft</div>
+             <div className="w-2 h-2 rounded-full bg-blue-500 absolute top-1/2 -right-1 transform -translate-y-1/2"></div>
+           </div>
+  
+           <div className="absolute top-[80px] left-[280px] w-32 bg-black/80 border border-purple-500/50 rounded p-2 text-[10px] text-white shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+             <div className="w-2 h-2 rounded-full bg-blue-500 absolute top-1/2 -left-1 transform -translate-y-1/2"></div>
+             <div className="font-bold text-purple-400 mb-1 border-b border-white/10 pb-1">Kalman Filter</div>
+             <div className="text-gray-400">Iterations: 1000</div>
+             <div className="w-2 h-2 rounded-full bg-purple-500 absolute top-1/2 -right-1 transform -translate-y-1/2"></div>
+           </div>
+  
+           <div className="absolute top-[230px] left-[20px] w-24 bg-black/80 border border-green-500/50 rounded p-2 text-[10px] text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+             <div className="font-bold text-green-400 mb-1 border-b border-white/10 pb-1">CMDP Barrier</div>
+             <div className="text-gray-400">Bounds: ±2.5σ</div>
+             <div className="w-2 h-2 rounded-full bg-green-500 absolute top-1/2 -right-1 transform -translate-y-1/2"></div>
+           </div>
+  
+           <div className="absolute top-[170px] left-[560px] w-32 bg-black/80 border border-emerald-500/50 rounded p-2 text-[10px] text-white shadow-[0_0_20px_rgba(16,185,129,0.5)]">
+             <div className="w-2 h-2 rounded-full bg-purple-500 absolute top-1/4 -left-1 transform -translate-y-1/2"></div>
+             <div className="w-2 h-2 rounded-full bg-green-500 absolute top-3/4 -left-1 transform -translate-y-1/2"></div>
+             <div className="font-bold text-emerald-400 mb-1 border-b border-white/10 pb-1">TWAP Executor</div>
+             <div className="text-gray-400">Latency: ~0.8ms</div>
+             <div className="text-gray-400">Slippage: Max 0.1%</div>
+           </div>
+         </div>
+      </div>
+    );
+};

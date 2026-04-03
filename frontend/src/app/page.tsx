@@ -10,7 +10,8 @@ import {
   DividendsPanel, ToolsPanel, LearnPanel, TeamPanel, CommunityPanel, EventsPanel,
   CompetitionsPanel, ChallengePanel, ConsultantPanel, ReferralPanel, AnnouncementsPanel, NotificationsPanel,
   AutonomousSentinelPanel, RLHyperAllocatorPanel,
-  LOBImbalancePanel, BacktestSandboxPanel, MacroGlobePanel
+  LOBImbalancePanel, BacktestSandboxPanel, MacroGlobePanel,
+  AlgorithmicNexusPanel
 } from '@/components/dashboard/Widgets';
 
 type ActivePanel = {
@@ -51,9 +52,55 @@ export default function Home() {
     setPanels(prev => [...prev, newPanel]);
   }, []);
 
+  const [isListening, setIsListening] = useState(false);
+
+  const speakBack = (text: string) => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.rate = 1.1;
+      msg.pitch = 0.9;
+      window.speechSynthesis.speak(msg);
+    }
+  };
+
+  const processIntent = (input: string) => {
+    const q = input.toLowerCase();
+    if (q.includes('event')) spawnPanel('events', 'Upcoming Events');
+    else if (q.includes('alpha')) spawnPanel('alphas', 'Alpha Signatures');
+    else if (q.includes('allocate') || q.includes('portfolio') || q.includes('hyper allocator')) spawnPanel('allocator', 'RL Portfolio Engine');
+    else if (q.includes('order') || q.includes('lob') || q.includes('imbalance')) spawnPanel('lob', 'Limit Order Matrix');
+    else if (q.includes('backtest') || q.includes('sandbox')) spawnPanel('backtest', 'Deep-RL Evaluator');
+    else if (q.includes('macro') || q.includes('globe') || q.includes('news')) spawnPanel('macro', 'Omniscient NLP Globe');
+    else if (q.includes('nexus') || q.includes('visualize') || q.includes('blueprint')) spawnPanel('nexus', 'Algorithmic Nexus');
+    else if (q.includes('challenge')) spawnPanel('challenge', 'Challenge Stats');
+    else if (q.includes('simulate')) spawnPanel('simulate', 'Simulation Engine');
+    else if (q.includes('data')) spawnPanel('data', 'Data Feeds');
+    else spawnPanel('notifications', 'System Notifications');
+  };
+
   React.useEffect(() => {
     // Zero-learning curve: Open Sentinel immediately on mount
     spawnPanel('sentinel', 'Autonomous Sentinel');
+    
+    // Voice OS Initialization
+    if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+       const recognition = new SpeechRecognition();
+       recognition.continuous = false;
+       recognition.interimResults = false;
+       
+       recognition.onstart = () => setIsListening(true);
+       recognition.onend = () => setIsListening(false);
+       
+       recognition.onresult = (event: any) => {
+         const transcript = event.results[0][0].transcript;
+         setIntentInput(transcript);
+         processIntent(transcript);
+         speakBack("Acknowledged. " + transcript);
+       };
+
+       (window as any).startListening = () => recognition.start();
+    }
   }, [spawnPanel]);
 
   const closePanel = (id: string) => {
@@ -65,18 +112,7 @@ export default function Home() {
     if (!intentInput.trim()) return;
 
     setLoading(true);
-    // Instant generation (Zero-UI delay removed)
-    const q = intentInput.toLowerCase();
-    if (q.includes('event')) spawnPanel('events', 'Upcoming Events');
-    else if (q.includes('alpha')) spawnPanel('alphas', 'Alpha Signatures');
-    else if (q.includes('allocate') || q.includes('portfolio')) spawnPanel('allocator', 'RL Portfolio Engine');
-    else if (q.includes('order') || q.includes('lob') || q.includes('imbalance')) spawnPanel('lob', 'Limit Order Matrix');
-    else if (q.includes('backtest') || q.includes('sandbox')) spawnPanel('backtest', 'Deep-RL Evaluator');
-    else if (q.includes('macro') || q.includes('globe') || q.includes('news')) spawnPanel('macro', 'Omniscient NLP Globe');
-    else if (q.includes('challenge')) spawnPanel('challenge', 'Challenge Stats');
-    else if (q.includes('simulate')) spawnPanel('simulate', 'Simulation Engine');
-    else if (q.includes('data')) spawnPanel('data', 'Data Feeds');
-    else spawnPanel('notifications', 'System Notifications');
+    processIntent(intentInput);
     
     setIntentInput("");
     setLoading(false);
@@ -96,6 +132,7 @@ export default function Home() {
       case 'lob': return <LOBImbalancePanel />;
       case 'backtest': return <BacktestSandboxPanel />;
       case 'macro': return <MacroGlobePanel />;
+      case 'nexus': return <AlgorithmicNexusPanel />;
       case 'stock': return <StockTrackerPanel />;
       case 'dividends': return <DividendsPanel />;
       case 'tools': return <ToolsPanel />;
@@ -148,13 +185,13 @@ export default function Home() {
           className="w-full pointer-events-auto group"
         >
           <form onSubmit={handleIntent} className="relative w-full">
-            <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-white/20 group-focus-within:text-sky-400 transition-colors">
-              {loading ? <Loader2 className="animate-spin text-sky-400" size={18} /> : <Search size={18} />}
+            <div className={`absolute inset-y-0 left-5 flex items-center pointer-events-none transition-colors ${isListening ? 'text-red-500 animate-pulse' : 'text-white/20 group-focus-within:text-sky-400'}`}>
+              {loading ? <Loader2 className="animate-spin text-sky-400" size={18} /> : (isListening ? <div className="w-4 h-4 rounded-full bg-red-500 shadow-[0_0_10px_#ef4444]" /> : <Search size={18} />)}
             </div>
             <input
               type="text"
               className={`
-                w-full bg-white/[0.01] border border-white/5 rounded-2xl py-4 pl-14 pr-6 
+                w-full bg-white/[0.01] border ${isListening ? 'border-red-500/50 bg-red-500/5' : 'border-white/5'} rounded-2xl py-4 pl-14 pr-16 
                 text-sm text-white outline-none focus:bg-white/[0.03] focus:border-sky-500/30
                 backdrop-blur-2xl transition-all shadow-[0_0_40px_rgba(0,0,0,0.5)] 
                 placeholder:text-white/20 font-mono tracking-wide
@@ -163,6 +200,9 @@ export default function Home() {
               value={intentInput}
               onChange={(e) => setIntentInput(e.target.value)}
             />
+            <button type="button" onClick={() => (window as any).startListening?.()} className="absolute inset-y-0 right-4 flex items-center text-xs font-bold text-white/50 hover:text-white transition-colors" title="Voice OS">
+              VOICE OS
+            </button>
           </form>
         </motion.div>
       </div>
