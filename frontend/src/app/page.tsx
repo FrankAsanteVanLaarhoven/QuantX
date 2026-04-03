@@ -13,6 +13,7 @@ import {
   LOBImbalancePanel, BacktestSandboxPanel, MacroGlobePanel,
   AlgorithmicNexusPanel, WebRTCHootPanel
 } from '@/components/dashboard/Widgets';
+import { QuantXLogo } from '@/components/ui/QuantXLogo';
 
 type ActivePanel = {
   id: string;
@@ -205,9 +206,11 @@ export default function Home() {
                    <span className="text-[8px] font-bold tracking-widest text-emerald-400">SDK</span>
                 </div>
              </div>
-
-             <h1 className="text-3xl font-bold bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent mb-2">QuantX Sentinel</h1>
-             <p className="text-white/40 text-sm mb-8 tracking-wide">Enterprise Omniscient Architecture</p>
+             <div className="flex flex-col items-start gap-0 relative -left-2 mb-6">
+                 <QuantXLogo size={70} className="text-white drop-shadow-[0_0_20px_rgba(56,189,248,0.3)] mb-1" />
+                 <h1 className="text-3xl font-bold bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent ml-2 tracking-tight">QuantX Sentinel</h1>
+                 <p className="text-white/40 text-sm ml-2 tracking-wide font-medium">Enterprise Omniscient Architecture</p>
+             </div>
 
              <form onSubmit={handleAuthSubmit} className="flex flex-col gap-4">
                 <div>

@@ -6,6 +6,7 @@ import {
   BarChart2, BookOpen, Database, Target, Users, Globe, Brain, 
   LineChart, PieChart, TrendingUp, Calendar, Zap, Award, UserPlus, FileText
 } from 'lucide-react';
+import { QuantXLogo } from '../ui/QuantXLogo';
 
 interface GlassSidebarProps {
   onSpawnPanel: (id: string, title: string) => void;
@@ -52,7 +53,7 @@ export function GlassSidebar({ onSpawnPanel }: GlassSidebarProps) {
         
         <div className="p-6 pb-2 border-b border-white/[0.05] flex items-center justify-between">
             <div className="flex items-center gap-3 text-sky-400 font-bold text-xl tracking-widest">
-              <Brain className="text-sky-400 drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
+              <QuantXLogo size={32} className="text-white drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
               <span className={`transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>QUANT<span className="text-white">X</span></span>
             </div>
         </div>
