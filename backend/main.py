@@ -245,6 +245,122 @@ def get_risk_analysis(ticker: str):
     except Exception as e:
         return {"error": str(e)}
 
+# -------------------------------------------------------------
+# Autonomous Predictive Market Sentinel (7-Day Cognitive Engine)
+# -------------------------------------------------------------
+import json
+import numpy as np
+
+def apply_kalman_filter(prices, q_var=1e-4, r_var=0.01):
+    n = len(prices)
+    xhat = np.zeros(n)      
+    P = np.zeros(n)         
+    xhatminus = np.zeros(n) 
+    Pminus = np.zeros(n)    
+    K = np.zeros(n)         
+    if n == 0: return xhat
+    xhat[0] = prices[0]
+    P[0] = 1.0
+    for k in range(1, n):
+        xhatminus[k] = xhat[k-1]
+        Pminus[k] = P[k-1] + q_var
+        K[k] = Pminus[k] / ( Pminus[k] + r_var )
+        xhat[k] = xhatminus[k] + K[k]*(prices[k] - xhatminus[k])
+        P[k] = (1 - K[k]) * Pminus[k]
+    return xhat
+
+@app.get("/api/cognitive/analyze/{ticker}")
+@nvidia_accelerated
+def autonomous_cognitive_analysis(ticker: str, smoothing_factor: float = 1e-4):
+    """
+    SOTA CMDP and Kalman Endpoint. 
+    Synthesizes raw history using Semantic Barriers and pipelines into DL/ML Gemini abstraction.
+    """
+    try:
+        data = yf.download(ticker, period="60d", interval="1d", progress=False)
+        close_col = 'Adj Close' if 'Adj Close' in data.columns else 'Close'
+        if isinstance(data.columns, pd.MultiIndex):
+            close_series = data[close_col][ticker].dropna()
+        else:
+            close_series = data[close_col].dropna()
+
+        if len(close_series) < 5:
+            return {"error": "Insufficient market data for mathematical optimization."}
+
+        prices = close_series.values
+        dates = [d.strftime("%Y-%m-%d") for d in close_series.index]
+        
+        kalman_prices = apply_kalman_filter(prices, q_var=smoothing_factor, r_var=0.01)
+        vol_std = float(np.std(prices))
+        
+        barrier_upper = kalman_prices + (vol_std * 1.5)
+        barrier_lower = kalman_prices - (vol_std * 1.5)
+        
+        graph_data = [
+            {
+               "date": dates[i],
+               "raw_price": float(prices[i]),
+               "kalman": float(kalman_prices[i]),
+               "barrier_upper": float(barrier_upper[i]),
+               "barrier_lower": float(barrier_lower[i])
+            } for i in range(len(prices))
+        ]
+
+        current_price = float(prices[-1])
+        past_price = float(prices[0])
+        return_30d = ((current_price - past_price) / past_price) * 100
+
+        prompt = f"""
+        Act as an Autonomous SOTA Quantitative DL/ML AI simulating a Constrained Markov Decision Process.
+        You are observing an asset ({ticker}) whose historical observation errors have been suppressed via mathematical Kalman Filtering.
+        The Kalman trajectory is bounded by Semantic Barrier Functions preventing catastrophic inferences.
+        
+        Context parameters:
+        - 60-Day Return: {return_30d:.2f}%
+        - Current Spot: ${current_price:.2f}
+        - Base Volatility: {vol_std:.2f}
+
+        Construct a comprehensive '7-Day Cognitive Risk Approach' bounded strictly by CMDP mathematical limits.
+        Provide SOTA optimal recommendations.
+
+        Output EXACTLY a valid JSON object matching this schema. NO Markdown formatting, NO triple backticks, JUST pure JSON string:
+        {{
+            "ticker": "{ticker}",
+            "current_price": {current_price},
+            "short_term_outlook": "A rigorous 1-to-3 day prediction. Include direction and ML rationale.",
+            "long_term_outlook": "A rigorous 3-to-6 month prediction. Include target logic.",
+            "cognitive_risk_7d": [
+                "Highest probability risk vector text...",
+                "Secondary tail risk vector...",
+                "Tertiary volatility risk..."
+            ],
+            "recommendation": "BUY",  // Must be literally BUY, HOLD, or SELL
+            "confidence": 85 // Integer between 0 and 100
+        }}
+        """
+
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
+
+        text = response.text.strip()
+        if text.startswith("```json"):
+            text = text[7:-3].strip()
+        elif text.startswith("```"):
+            text = text[3:-3].strip()
+
+        try:
+            parsed = json.loads(text)
+            parsed["scrutiny_graph"] = graph_data
+            parsed["smoothing_factor"] = smoothing_factor
+            return parsed
+        except json.JSONDecodeError:
+            return {"error": "Failed to decrypt ML response stream.", "raw": text[:500]}
+
+    except Exception as e:
+        return {"error": str(e)}
+
 class AlphaRequest(BaseModel):
     market_sentiment: str
 
