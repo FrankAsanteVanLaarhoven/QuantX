@@ -1401,7 +1401,7 @@ export const WorldQuantIQCPanel = () => {
            </div>
 
            <div className="flex-1 w-full flex overflow-hidden bg-black text-white relative">
-              <PanelGroup direction="horizontal">
+              <PanelGroup orientation="horizontal">
               
               {/* STAGE 1: GP Foundry */}
               <Panel defaultSize={33} minSize={20}>
