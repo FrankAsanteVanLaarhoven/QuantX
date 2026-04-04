@@ -26,6 +26,7 @@ const MENU_ITEMS = [
   { id: 'tools', name: 'Tools', icon: <FileText size={18} /> },
   { id: 'events', name: 'Events', icon: <Calendar size={18} /> },
   { id: 'iqc2026', name: 'IQC 2026', icon: <Award size={18} /> },
+  { id: 'iqc', name: 'IQC Domination Matrix', icon: <Zap size={18} /> },
   { id: 'consultant', name: 'Consultant program', icon: <Users size={18} /> },
   { id: 'refer', name: 'Refer a friend', icon: <UserPlus size={18} /> },
 ];

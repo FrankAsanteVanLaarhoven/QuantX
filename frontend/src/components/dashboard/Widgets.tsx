@@ -1332,3 +1332,188 @@ export const WebRTCHootPanel = () => {
       </div>
     );
 };
+
+export const WorldQuantIQCPanel = () => {
+    const [gpState, setGpState] = useState<'idle'|'evolving'|'done'>('idle');
+    const [children, setChildren] = useState<any[]>([]);
+    const [manifoldNodes, setManifoldNodes] = useState<any[]>([]);
+    const [transpiling, setTranspiling] = useState(false);
+    const [transpileIn, setTranspileIn] = useState("");
+    const [transpileOut, setTranspileOut] = useState("");
+
+    const handleEvolve = async () => {
+        setGpState('evolving');
+        try {
+            const res = await fetch("http://127.0.0.1:8000/api/iqc/evolve", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ parents: ["volume / close", "returns * vwap"] })
+            });
+            const data = await res.json();
+            setChildren(data.children.slice(0, 8)); // Take top 8
+            
+            // Map the nodes
+            const mRes = await fetch("http://127.0.0.1:8000/api/iqc/manifold");
+            const mData = await mRes.json();
+            setManifoldNodes(mData.nodes);
+        } catch (e) {
+            console.error(e);
+        }
+        setGpState('done');
+    };
+
+    const handleTranspile = async () => {
+        if (!transpileIn) return;
+        setTranspiling(true);
+        try {
+            const res = await fetch("http://127.0.0.1:8000/api/iqc/transpile", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ expression: transpileIn })
+            });
+            const data = await res.json();
+            setTranspileOut(data.output);
+        } catch (e) {
+            console.error(e);
+        }
+        setTranspiling(false);
+    };
+
+    return (
+        <div className="flex flex-col h-full w-[1000px] rounded-xl bg-black border border-white/10 overflow-hidden font-sans relative">
+           <div className="flex justify-between items-center p-4 border-b border-white/10 relative z-10 bg-black">
+              <div className="flex items-center gap-3">
+                 <div className="w-8 h-8 rounded bg-red-600/10 flex items-center justify-center border border-red-500/30">
+                    <Award size={16} className="text-red-500" />
+                 </div>
+                 <div>
+                    <h2 className="text-white font-bold tracking-widest text-sm uppercase">WorldQuant IQC 2026 Domination Matrix</h2>
+                    <p className="text-white/40 text-[10px] tracking-[0.2em] uppercase font-mono">Generative Mass-Fabrication Pipeline</p>
+                 </div>
+              </div>
+           </div>
+
+           <div className="flex-1 grid grid-cols-3 gap-0 h-[600px] overflow-hidden bg-black text-white relative">
+              
+              {/* STAGE 1: GP Foundry */}
+              <div className="border-r border-white/10 p-4 flex flex-col relative overflow-hidden bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay">
+                 <div className="absolute inset-0 bg-black/90 pointer-events-none z-0"></div>
+                 <div className="relative z-10 flex flex-col h-full">
+                     <h3 className="text-xs font-bold uppercase tracking-widest text-red-500 mb-4 border-b border-red-500/20 pb-2">1. Evolutionary GP Foundry</h3>
+                     
+                     <div className="bg-white/5 border border-white/10 p-3 rounded text-[10px] text-white/50 font-mono mb-4">
+                         Parent Set Initialized:<br/>
+                         [0] (volume / close)<br/>
+                         [1] (returns * vwap)
+                     </div>
+
+                     <button onClick={handleEvolve} disabled={gpState === 'evolving'} className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/20 text-white text-[10px] uppercase tracking-widest font-bold transition-all disabled:opacity-50">
+                        {gpState === 'evolving' ? '[ FABRICATING ... ]' : 'START MASS-EVOLUTION'}
+                     </button>
+
+                     <div className="mt-4 flex-1 overflow-auto pr-2 space-y-2">
+                        {children.map((c: any, i: number) => (
+                           <div key={i} className="p-2 border border-white/5 bg-white/[0.02] rounded hover:border-red-500/30 transition-colors">
+                              <div className="flex justify-between items-center mb-1">
+                                 <span className="text-[9px] text-white/40 font-mono">ID: {c.id}</span>
+                                 <span className="text-[9px] text-red-400 font-bold border border-red-500/20 px-1 rounded">Fitness: {c.fitness}</span>
+                              </div>
+                              <div className="text-[10px] text-white font-mono break-all line-clamp-2">{c.expression}</div>
+                           </div>
+                        ))}
+                     </div>
+                 </div>
+              </div>
+
+              {/* STAGE 2: TDA Orthogonality */}
+              <div className="border-r border-white/10 flex flex-col bg-black relative">
+                 <div className="p-4 relative z-10 bg-black border-b border-white/10">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-red-500">2. Topology Orthogonality Map</h3>
+                    <p className="text-[9px] text-white/30 uppercase tracking-wider">TDA/UMAP Clustering Matrix</p>
+                 </div>
+                 <div className="flex-1 relative w-full h-full overflow-hidden bg-black flex items-center justify-center">
+                    {/* Simulated 3D SVG Space */}
+                    <svg viewBox="-150 -150 300 300" className="w-full h-full opacity-80">
+                        <defs>
+                            <circle id="node" r="2" fill="currentColor" />
+                            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                               <feGaussianBlur stdDeviation="3" result="blur" />
+                               <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        {/* 3D Axis Grids */}
+                        <line x1="-150" y1="0" x2="150" y2="0" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" />
+                        <line x1="0" y1="-150" x2="0" y2="150" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" />
+                        <circle cx="0" cy="0" r="100" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" strokeDasharray="2 4" />
+                        <circle cx="0" cy="0" r="50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" strokeDasharray="2 4" />
+                        
+                        {/* Nodes */}
+                        {manifoldNodes.map((n: any, i: number) => {
+                            const isOutlier = n.group === 'Outlier_Orthogonal';
+                            return (
+                               <g key={i} className={`transition-all duration-1000 ${isOutlier ? 'text-red-500' : 'text-white/40'}`}>
+                                   <use href="#node" x={n.x} y={n.y} filter={isOutlier ? "url(#glow)" : ""} />
+                                   {isOutlier && <line x1="0" y1="0" x2={n.x} y2={n.y} stroke="rgba(239,68,68,0.2)" strokeWidth="0.5" />}
+                               </g>
+                            )
+                        })}
+                    </svg>
+
+                    {(gpState === 'idle' || gpState === 'evolving') && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-20">
+                           <span className="text-[10px] text-white/30 tracking-widest font-mono uppercase">{gpState === 'evolving' ? 'MAPPING DISTANCE...' : 'AWAITING GENERATION'}</span>
+                        </div>
+                    )}
+                    <div className="absolute bottom-4 left-4 right-4 bg-black/80 border border-white/5 text-[9px] text-white/50 p-2 font-mono uppercase text-center rounded flex justify-center items-center gap-4">
+                        <div className="flex items-center gap-1"><div className="w-2 h-2 bg-red-500 rounded-full glow" /> 100% Orthogonal</div>
+                        <div className="flex items-center gap-1"><div className="w-2 h-2 bg-white/40 rounded-full" /> Highly Correlated</div>
+                    </div>
+                 </div>
+              </div>
+
+              {/* STAGE 3: Transpiler Pipeline */}
+              <div className="p-4 flex flex-col bg-black">
+                 <h3 className="text-xs font-bold uppercase tracking-widest text-red-500 mb-4 border-b border-red-500/20 pb-2">3. WQ Syntax Transpiler</h3>
+                 
+                 <div className="flex-1 flex flex-col gap-4">
+                    <p className="text-[10px] text-white/40 leading-relaxed">
+                        Convert generated Python AST logic nodes directly into proprietary WorldQuant BRAIN operator syntax.
+                    </p>
+                    
+                    <div className="flex flex-col gap-2">
+                        <span className="text-[9px] uppercase tracking-widest text-white/30 font-mono">NATIVE LOGIC STRING</span>
+                        <textarea 
+                           className="w-full h-24 bg-white/5 border border-white/10 rounded p-2 text-white font-mono text-[10px] resize-none outline-none focus:border-red-500/50 transition-colors"
+                           placeholder="Type your hypothesis..."
+                           value={transpileIn}
+                           onChange={(e) => setTranspileIn(e.target.value)}
+                        />
+                    </div>
+
+                    <button onClick={handleTranspile} disabled={transpiling || !transpileIn} className="w-full py-3 border border-red-500/50 text-red-400 bg-red-500/5 hover:bg-red-500/10 text-[10px] uppercase tracking-widest font-bold transition-all disabled:opacity-50">
+                        {transpiling ? 'COMPILING AST...' : 'TRANSPILE TO WQ BRAIN'}
+                    </button>
+
+                    <div className="flex-1 flex flex-col gap-2 relative">
+                        <span className="text-[9px] uppercase tracking-widest text-white/30 font-mono">WORLDQUANT BRAIN OUTPUT</span>
+                        <div className="absolute inset-0 top-6 border border-white/10 bg-black p-3 relative overflow-hidden group">
+                           {transpileOut ? (
+                               <>
+                                 <code className="text-[11px] text-white font-mono leading-relaxed block break-all">{transpileOut}</code>
+                                 <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white text-[8px] tracking-wider uppercase font-bold rounded" onClick={() => navigator.clipboard.writeText(transpileOut)}>COPY MATCH</button>
+                                 </div>
+                               </>
+                           ) : (
+                               <div className="w-full h-full flex items-center justify-center">
+                                   <span className="text-[10px] text-white/20 font-mono">&gt; AWAITING INPUT</span>
+                               </div>
+                           )}
+                        </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </div>
+    );
+};

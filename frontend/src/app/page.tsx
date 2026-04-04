@@ -11,7 +11,7 @@ import {
   CompetitionsPanel, ChallengePanel, ConsultantPanel, ReferralPanel, AnnouncementsPanel, NotificationsPanel,
   AutonomousSentinelPanel, RLHyperAllocatorPanel,
   LOBImbalancePanel, BacktestSandboxPanel, MacroGlobePanel,
-  AlgorithmicNexusPanel, WebRTCHootPanel
+  AlgorithmicNexusPanel, WebRTCHootPanel, WorldQuantIQCPanel
 } from '@/components/dashboard/Widgets';
 import { QuantXLogo } from '@/components/ui/QuantXLogo';
 
@@ -80,6 +80,7 @@ export default function Home() {
     else if (q.includes('challenge')) spawnPanel('challenge', 'Challenge Stats');
     else if (q.includes('simulate')) spawnPanel('simulate', 'Simulation Engine');
     else if (q.includes('data')) spawnPanel('data', 'Data Feeds');
+    else if (q.includes('iqc') || q.includes('worldquant') || q.includes('fabricate') || q.includes('transpile')) spawnPanel('iqc', 'WorldQuant IQC Domination Matrix');
     else spawnPanel('notifications', 'System Notifications');
   };
 
@@ -177,6 +178,7 @@ export default function Home() {
       case 'iqc2026': return <ChallengePanel />;
       case 'consultant': return <ConsultantPanel />;
       case 'refer': return <ReferralPanel />;
+      case 'iqc': return <WorldQuantIQCPanel />;
       
       case 'challenge': return <ChallengePanel />;
       case 'announcements': return <AnnouncementsPanel />;

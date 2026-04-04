@@ -717,3 +717,57 @@ async def login(user: AuthData):
         return {"status": "success", "token": f"SDK_SOTA_{uuid.uuid4()}"}
     else:
         raise HTTPException(status_code=401, detail="Invalid Institutional Credentials")
+
+# ==============================================================================
+# WORLDQUANT IQC ALPHA FABRICATION ENDPOINTS
+# ==============================================================================
+
+class EvolveRequest(BaseModel):
+    parents: list[str]
+
+@app.post("/api/iqc/evolve")
+async def iqc_evolve(req: EvolveRequest):
+    # Simulated Genetic Programming Mutator Engine
+    import random
+    modifiers = ["ts_rank", "group_neutralize", "ts_std_dev", "ts_corr", "ts_av_diff"]
+    fields = ["volume", "close", "vwap", "open", "returns"]
+    children = []
+    
+    for i in range(15):
+        parent = random.choice(req.parents) if req.parents else "close"
+        mod = random.choice(modifiers)
+        fld = random.choice(fields)
+        days = random.randint(2, 60)
+        child = f"({parent}) + {mod}({fld}, {days})"
+        children.append({"id": f"Alpha_G{i}", "expression": child, "fitness": round(random.uniform(1.1, 4.5), 2)})
+        
+    return {"status": "success", "generation_count": 15, "children": sorted(children, key=lambda x: x["fitness"], reverse=True)}
+
+@app.get("/api/iqc/manifold")
+async def iqc_manifold():
+    # Simulated TDA / UMAP Orthogonality Matrix mapping
+    import random
+    nodes = []
+    for i in range(30):
+        nodes.append({
+            "id": f"A_{i}",
+            "x": random.uniform(-100, 100),
+            "y": random.uniform(-100, 100),
+            "z": random.uniform(-100, 100),
+            "group": random.choice(["Cluster_Alpha", "Cluster_Beta", "Outlier_Orthogonal"])
+        })
+    return {"status": "success", "nodes": nodes}
+
+class TranspileRequest(BaseModel):
+    expression: str
+
+@app.post("/api/iqc/transpile")
+async def iqc_transpile(req: TranspileRequest):
+    # Simulating a massive AST walk mapping generic language to WorldQuant syntax
+    import time
+    expr = req.expression.lower()
+    
+    # Generic dumb transpiler logic mapped to string
+    transpiled = f"group_neutralize(ts_rank({expr}, 10), industry)"
+    
+    return {"status": "success", "input": req.expression, "output": transpiled}
