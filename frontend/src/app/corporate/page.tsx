@@ -1,27 +1,67 @@
 import React from 'react';
+import styles from './page.module.css';
 
 export default function CorporatePage() {
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-sans overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-black to-black" />
-        <div className="relative z-10 flex flex-col items-center">
-            <h1 className="text-6xl font-bold tracking-tighter mb-4">QuantX<span className="text-red-500">OS</span></h1>
-            <p className="text-white/50 tracking-widest uppercase text-sm mb-12">Institutional Grade Intelligence Layer</p>
-            
-            <div className="flex gap-4 mb-24">
-                <button className="px-6 py-3 border border-red-500/50 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs tracking-widest font-bold z-10 transition-colors uppercase">
-                    Research Division
-                </button>
-                <button className="px-6 py-3 border border-white/20 hover:border-white/50 text-white/50 hover:text-white text-[11px] tracking-widest font-bold z-10 transition-colors uppercase">
-                    Fleet Deployment Core
-                </button>
+    <div className={styles.container}>
+        {/* Animated Synthethic Grid Layer */}
+        <div className={styles.ambientGrid} />
+        <div className={styles.ambientGlow} />
+
+        <nav className={styles.nav}>
+            <div className={styles.logo}>QuantX<span>OS</span></div>
+            <a href="http://iqxos.com" className={styles.secondaryBtn} style={{ padding: '0.5rem 1.5rem', fontSize: '0.85rem' }}>
+                Foundry Access
+            </a>
+        </nav>
+
+        <section className={styles.hero}>
+            <div className={styles.badge}>Next-Gen Infrastructure</div>
+            <h1 className={styles.title}>The Institutional<br />Intelligence Layer</h1>
+            <p className={styles.subtitle}>
+                QuantX is a hyper-scalable, glassmorphic analytics framework engineered 
+                for elite hedge funds and systemic algorithmic generation.
+            </p>
+            <div className={styles.ctaContainer}>
+                <a href="#early-access" className={styles.primaryBtn}>Request Early Access</a>
+                <a href="http://iqxos.com" className={styles.secondaryBtn}>View Live Matrix</a>
             </div>
-            
-            <div className="border-t border-white/5 pt-8 w-full max-w-sm text-center flex flex-col items-center gap-2">
-                <div className="w-1 h-4 bg-red-500/50" />
-                <p className="text-[10px] text-white/20 tracking-[0.2em] uppercase">SYSTEMS ONLINE: AWAITING PROTOCOL INITIATION</p>
+        </section>
+
+        <section className={styles.features}>
+            <div className={styles.glassCard}>
+                <div className={styles.cardIcon}>🧠</div>
+                <h3 className={styles.cardTitle}>Gemini Auto-Alphas</h3>
+                <p className={styles.cardDesc}>
+                    Tap into Google's Gemini 1.5 Pro directly inside your matrix. Issue natural language prompts and instantly receive complex statistical trading formulas mapped to real-world anomalies.
+                </p>
             </div>
-        </div>
+            <div className={styles.glassCard}>
+                <div className={styles.cardIcon}>⚡</div>
+                <h3 className={styles.cardTitle}>Sub-Second Latency</h3>
+                <p className={styles.cardDesc}>
+                    Our Next.js Turbopack Edge interface pulls from FastAPI WebSockets, streaming OHLCV orderbook data to the screen natively in sub-millisecond intervals.
+                </p>
+            </div>
+            <div className={styles.glassCard}>
+                <div className={styles.cardIcon}>🛡️</div>
+                <h3 className={styles.cardTitle}>Federated Security</h3>
+                <p className={styles.cardDesc}>
+                    Powered by zero-trust Workload Identity Federation, QuantX never stores long-lived keys. Continuous integration ensures bleeding edge updates safely reach the cluster.
+                </p>
+            </div>
+        </section>
+
+        <section id="early-access" className={styles.waitlist}>
+            <h2 className={styles.waitlistTitle}>Join The Protocol</h2>
+            <p className={styles.subtitle} style={{ marginBottom: '1rem'}}>
+                Reserve your slot for the closed beta deployment of QuantX Phase II.
+            </p>
+            <form className={styles.waitlistForm} onSubmit={(e) => e.preventDefault()}>
+                <input type="email" placeholder="institutional@email.com" className={styles.inputField} required />
+                <button type="submit" className={styles.primaryBtn}>Initialize</button>
+            </form>
+        </section>
     </div>
   )
 }
