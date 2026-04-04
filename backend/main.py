@@ -401,6 +401,42 @@ def suggest_alpha(req: AlphaRequest):
         return {"suggestion": "ts_rank(returns, 10)", "rationale": "Fallback momentum rank."}
 
 # -------------------------------------------------------------
+# Gemini Alpha Co-Pilot
+# -------------------------------------------------------------
+class CopilotRequest(BaseModel):
+    prompt: str
+
+@app.post("/api/copilot/generate")
+@nvidia_accelerated
+def copilot_generate_alpha(req: CopilotRequest):
+    """
+    Direct Gemini 1.5 Pro interface for the Co-Pilot Widget.
+    """
+    if not GEMINI_API_KEY:
+        return {"code": "rank(ts_std_dev(close, 20))", "explanation": "Fallback alpha due to missing API key."}
+        
+    try:
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        system_instruction = '''
+        You are the QuantX Gemini Co-Pilot. A Hedge Fund researcher is asking you to build a quantitative WorldQuant-style Alpha logic.
+        Respond ONLY with a valid JSON. Schema:
+        {"code": "the alpha string like ts_rank(returns, 20)", "explanation": "short string explaining logic"}
+        '''
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=req.prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                response_mime_type="application/json",
+            )
+        )
+        import json
+        data = json.loads(response.text)
+        return data
+    except Exception as e:
+        return {"code": "Error", "explanation": str(e)}
+
+# -------------------------------------------------------------
 # RL Hyper-Allocator / Portfolio MPT GenAI
 # -------------------------------------------------------------
 import pandas as pd

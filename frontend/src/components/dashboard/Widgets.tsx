@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from "react-resizable-panels";
 import { Award } from 'lucide-react';
+import CopilotWidget from './CopilotWidget';
 
 const Card = ({ children }: { children: React.ReactNode }) => (
   <div className="flex flex-col h-full text-white/90 p-4 relative">
@@ -1413,6 +1414,11 @@ export const WorldQuantIQCPanel = () => {
                          Parent Set Initialized:<br/>
                          [0] (volume / close)<br/>
                          [1] (returns * vwap)
+                     </div>
+                     
+                     {/* 🧠 GEMINI CO-PILOT WIDGET INJECT */}
+                     <div className="flex-1 min-h-[300px] mb-4 overflow-hidden border border-white/5 rounded">
+                         <CopilotWidget />
                      </div>
 
                      <button onClick={handleEvolve} disabled={gpState === 'evolving'} className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/20 text-white text-[10px] uppercase tracking-widest font-bold transition-all disabled:opacity-50">
