@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
   backend-a100-engine:
@@ -11,13 +11,6 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     networks:
       - quantx_net
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
 
   frontend-spatial-os:
     build:
