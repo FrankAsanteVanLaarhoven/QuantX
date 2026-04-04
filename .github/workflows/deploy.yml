@@ -1,0 +1,56 @@
+name: Zero-Trust Deploy (GCP Workload Identity)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-to-gcp:
+    runs-on: ubuntu-latest
+    
+    # Required for Workload Identity Federation OIDC token emission
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud WIF'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          # IMPORTANT: Replace YOUR_PROJECT_NUMBER with the actual numeric ID of the project
+          # IMPORTANT: Replace the service account with the one bound to your WIF pool
+          workload_identity_provider: 'projects/YOUR_PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+          service_account: 'github-deployer@project-1fa64e91-d51b-4ea2-a9d.iam.gserviceaccount.com'
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          project_id: 'project-1fa64e91-d51b-4ea2-a9d'
+
+      - name: 'Overwire Deploy Command (SSH via IAP)'
+        run: |
+          gcloud compute ssh --zone "us-central1-a" "frankleroyvan@nava-web-server-e2-small" \
+            --project "project-1fa64e91-d51b-4ea2-a9d" \
+            --tunnel-through-iap \
+            --command "
+              # Clone or Update Repo
+              cd /home/frankleroyvan/quantX || git clone https://github.com/FrankAsanteVanLaarhoven/QuantX.git /home/frankleroyvan/quantX
+              cd /home/frankleroyvan/quantX
+              git pull origin main
+              
+              # Generate dynamic public environment configuration locally on the server
+              echo \"NEXT_PUBLIC_WS_URL=wss://api.iqxos.com/ws/telemetry\" > .env
+              echo \"NEXT_PUBLIC_API_URL=https://api.iqxos.com\" >> .env
+              echo \"GEMINI_API_KEY=\${{ secrets.GEMINI_API_KEY }}\" >> .env
+              
+              # Purge and Re-fabricate the GPU Docker Network
+              sudo docker-compose down
+              sudo docker-compose config
+              sudo docker-compose build --no-cache
+              sudo docker-compose up -d
+            "

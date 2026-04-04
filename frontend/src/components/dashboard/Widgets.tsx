@@ -3,6 +3,8 @@ import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, ComposedChart, ReferenceLine,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from "react-resizable-panels";
+import { Award } from 'lucide-react';
 
 const Card = ({ children }: { children: React.ReactNode }) => (
   <div className="flex flex-col h-full text-white/90 p-4 relative">
@@ -1313,7 +1315,7 @@ export const WebRTCHootPanel = () => {
             {/* Mock Peers */}
             {peers.map((peer, i) => (
                 <div key={i} className="relative rounded-lg overflow-hidden border border-white/10 bg-gray-900 aspect-video flex items-center justify-center">
-                    <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+                    <div className="absolute inset-0 opacity-20" />
                     <div className="flex flex-col items-center">
                         <div className="w-10 h-10 rounded-full bg-slate-800 border-2 border-green-500 overflow-hidden mb-2">
                             <div className="w-full h-full bg-gradient-to-tr from-green-500/20 to-blue-500/20" />
@@ -1340,6 +1342,9 @@ export const WorldQuantIQCPanel = () => {
     const [transpiling, setTranspiling] = useState(false);
     const [transpileIn, setTranspileIn] = useState("");
     const [transpileOut, setTranspileOut] = useState("");
+    const [hoveredNode, setHoveredNode] = useState<any>(null);
+    const [baselineOhlc, setBaselineOhlc] = useState<any[]>([]);
+    const [selectedAlpha, setSelectedAlpha] = useState<any>(null);
 
     const handleEvolve = async () => {
         setGpState('evolving');
@@ -1351,6 +1356,8 @@ export const WorldQuantIQCPanel = () => {
             });
             const data = await res.json();
             setChildren(data.children.slice(0, 8)); // Take top 8
+            if (data.baseline_ohlc) setBaselineOhlc(data.baseline_ohlc);
+            setSelectedAlpha(null);
             
             // Map the nodes
             const mRes = await fetch("http://127.0.0.1:8000/api/iqc/manifold");
@@ -1380,7 +1387,7 @@ export const WorldQuantIQCPanel = () => {
     };
 
     return (
-        <div className="flex flex-col h-full w-[1000px] rounded-xl bg-black border border-white/10 overflow-hidden font-sans relative">
+        <div className="flex flex-col h-full w-full rounded-xl bg-black border border-white/10 overflow-hidden font-sans relative">
            <div className="flex justify-between items-center p-4 border-b border-white/10 relative z-10 bg-black">
               <div className="flex items-center gap-3">
                  <div className="w-8 h-8 rounded bg-red-600/10 flex items-center justify-center border border-red-500/30">
@@ -1393,12 +1400,13 @@ export const WorldQuantIQCPanel = () => {
               </div>
            </div>
 
-           <div className="flex-1 grid grid-cols-3 gap-0 h-[600px] overflow-hidden bg-black text-white relative">
+           <div className="flex-1 w-full flex overflow-hidden bg-black text-white relative">
+              <PanelGroup direction="horizontal">
               
               {/* STAGE 1: GP Foundry */}
-              <div className="border-r border-white/10 p-4 flex flex-col relative overflow-hidden bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay">
-                 <div className="absolute inset-0 bg-black/90 pointer-events-none z-0"></div>
-                 <div className="relative z-10 flex flex-col h-full">
+              <Panel defaultSize={33} minSize={20}>
+              <div className="border-r border-white/10 p-4 flex flex-col overflow-hidden bg-[#050505] h-full">
+                 <div className="flex flex-col h-full">
                      <h3 className="text-xs font-bold uppercase tracking-widest text-red-500 mb-4 border-b border-red-500/20 pb-2">1. Evolutionary GP Foundry</h3>
                      
                      <div className="bg-white/5 border border-white/10 p-3 rounded text-[10px] text-white/50 font-mono mb-4">
@@ -1413,11 +1421,20 @@ export const WorldQuantIQCPanel = () => {
 
                      <div className="mt-4 flex-1 overflow-auto pr-2 space-y-2">
                         {children.map((c: any, i: number) => (
-                           <div key={i} className="p-2 border border-white/5 bg-white/[0.02] rounded hover:border-red-500/30 transition-colors">
+                           <div key={i} onClick={() => setSelectedAlpha(c)} className={`p-2 border rounded cursor-pointer transition-colors ${selectedAlpha?.id === c.id ? 'border-red-500/50 bg-red-500/5' : 'border-white/5 bg-white/[0.02] hover:border-red-500/30'}`}>
                               <div className="flex justify-between items-center mb-1">
                                  <span className="text-[9px] text-white/40 font-mono">ID: {c.id}</span>
                                  <span className="text-[9px] text-red-400 font-bold border border-red-500/20 px-1 rounded">Fitness: {c.fitness}</span>
                               </div>
+                              {c.curve && (
+                                 <div className="h-6 w-full my-2 border-b border-red-500/20">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                       <LineChart data={c.curve.map((v: any, j: number) => ({val: v, idx: j}))}>
+                                          <Line type="monotone" dataKey="val" stroke="#ef4444" strokeWidth={1} dot={false} isAnimationActive={false} />
+                                       </LineChart>
+                                    </ResponsiveContainer>
+                                 </div>
+                              )}
                               <div className="text-[10px] text-white font-mono break-all line-clamp-2">{c.expression}</div>
                            </div>
                         ))}
@@ -1431,7 +1448,9 @@ export const WorldQuantIQCPanel = () => {
                     <h3 className="text-xs font-bold uppercase tracking-widest text-red-500">2. Topology Orthogonality Map</h3>
                     <p className="text-[9px] text-white/30 uppercase tracking-wider">TDA/UMAP Clustering Matrix</p>
                  </div>
-                 <div className="flex-1 relative w-full h-full overflow-hidden bg-black flex items-center justify-center">
+                 <div className="flex-1 relative w-full flex flex-col overflow-hidden bg-black">
+                     {/* Map Top Half */}
+                     <div className="relative w-full h-[50%] flex flex-col items-center justify-center border-b border-white/10 shrink-0">
                     {/* Simulated 3D SVG Space */}
                     <svg viewBox="-150 -150 300 300" className="w-full h-full opacity-80">
                         <defs>
@@ -1451,12 +1470,26 @@ export const WorldQuantIQCPanel = () => {
                         {manifoldNodes.map((n: any, i: number) => {
                             const isOutlier = n.group === 'Outlier_Orthogonal';
                             return (
-                               <g key={i} className={`transition-all duration-1000 ${isOutlier ? 'text-red-500' : 'text-white/40'}`}>
+                               <g key={i} 
+                                  className={`transition-all duration-1000 cursor-crosshair ${isOutlier ? 'text-red-500' : 'text-white/40'}`}
+                                  onMouseEnter={() => setHoveredNode(n)}
+                                  onMouseLeave={() => setHoveredNode(null)}>
                                    <use href="#node" x={n.x} y={n.y} filter={isOutlier ? "url(#glow)" : ""} />
+                                   <circle cx={n.x} cy={n.y} r="8" fill="transparent" /> {/* Hitbox */}
                                    {isOutlier && <line x1="0" y1="0" x2={n.x} y2={n.y} stroke="rgba(239,68,68,0.2)" strokeWidth="0.5" />}
                                </g>
                             )
                         })}
+                        
+                        {/* Interactive Tooltip */}
+                        {hoveredNode && (
+                            <g transform={`translate(${hoveredNode.x}, ${hoveredNode.y - 15})`} className="pointer-events-none transition-all duration-200">
+                               <rect x="-30" y="-18" width="90" height="24" fill="rgba(0,0,0,0.9)" stroke="rgba(239,68,68,0.5)" strokeWidth="0.5" rx="2" />
+                               <text x="-26" y="-10" fill="white" fontSize="4px" fontFamily="monospace" fontWeight="bold border-b border-red-500 pb-1">{hoveredNode.id}</text>
+                               <text x="-26" y="-3" fill="rgba(239,68,68,0.9)" fontSize="4px" fontFamily="monospace">SCORE: {hoveredNode.fitness || 'TBD'}</text>
+                               <line x1="15" y1="0" x2="0" y2="15" stroke="rgba(239,68,68,0.5)" strokeWidth="0.5" />
+                            </g>
+                        )}
                     </svg>
 
                     {(gpState === 'idle' || gpState === 'evolving') && (
@@ -1469,10 +1502,49 @@ export const WorldQuantIQCPanel = () => {
                         <div className="flex items-center gap-1"><div className="w-2 h-2 bg-white/40 rounded-full" /> Highly Correlated</div>
                     </div>
                  </div>
+
+                 {/* Candlestick Bottom Half */}
+                 <div className="relative w-full flex-1 flex flex-col p-4 bg-black min-h-[300px]">
+                    <h3 className="text-[10px] text-white/50 font-mono uppercase tracking-widest mb-4">
+                        LIVE TIME SERIES OVERLAY: {selectedAlpha ? selectedAlpha.id : 'AWAITING SELECTION'}
+                    </h3>
+                    {selectedAlpha && baselineOhlc.length > 0 ? (
+                        <div className="flex-1 w-full relative">
+                           <ResponsiveContainer width="100%" height="100%">
+                               <ComposedChart data={baselineOhlc.map((candle, idx) => ({
+                                   ...candle,
+                                   alphaSig: selectedAlpha.curve[idx] || 0
+                               }))}>
+                                   <defs>
+                                       <linearGradient id="colorClose" x1="0" y1="0" x2="0" y2="1">
+                                           <stop offset="5%" stopColor="#ffffff" stopOpacity={0.1}/>
+                                           <stop offset="95%" stopColor="#ffffff" stopOpacity={0}/>
+                                       </linearGradient>
+                                   </defs>
+                                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                                   <YAxis yAxisId="left" domain={['auto', 'auto']} hide />
+                                   <YAxis yAxisId="right" orientation="right" domain={[0, 100]} hide />
+                                   <Area yAxisId="left" type="monotone" dataKey="close" stroke="#ffffff50" fill="url(#colorClose)" strokeWidth={1} />
+                                   <Line yAxisId="right" type="monotone" dataKey="alphaSig" stroke="#ef4444" strokeWidth={2} dot={false} isAnimationActive={false} />
+                               </ComposedChart>
+                           </ResponsiveContainer>
+                        </div>
+                    ) : (
+                        <div className="flex-1 w-full flex items-center justify-center opacity-30 text-[10px] font-mono">
+                            &gt; SELECT ALPHA FROM FOUNDRY TO PROJECT CANDLESTICKS
+                        </div>
+                    )}
+                 </div>
+
+                 </div>
               </div>
+              </Panel>
+              
+              <PanelResizeHandle className="w-1 bg-white/5 hover:bg-red-500/50 transition-colors cursor-col-resize active:bg-red-500 z-50 shrink-0" />
 
               {/* STAGE 3: Transpiler Pipeline */}
-              <div className="p-4 flex flex-col bg-black">
+              <Panel defaultSize={33} minSize={20}>
+              <div className="p-4 flex flex-col bg-black h-full">
                  <h3 className="text-xs font-bold uppercase tracking-widest text-red-500 mb-4 border-b border-red-500/20 pb-2">3. WQ Syntax Transpiler</h3>
                  
                  <div className="flex-1 flex flex-col gap-4">
@@ -1481,6 +1553,26 @@ export const WorldQuantIQCPanel = () => {
                     </p>
                     
                     <div className="flex flex-col gap-2">
+                        <div className="flex justify-between items-end">
+                            <span className="text-[9px] uppercase tracking-widest text-white/30 font-mono">PRE-CONFIGURED HYPOTHESIS TEMPLATE</span>
+                        </div>
+                        <select 
+                           className="w-full bg-black border border-white/10 rounded p-2 text-red-500 font-mono text-[10px] outline-none hover:border-white/20 transition-colors"
+                           onChange={(e) => {
+                               if(e.target.value) setTranspileIn(e.target.value);
+                           }}
+                        >
+                            <option value="">-- SELECT AUTOMATED HYPOTHESIS --</option>
+                            <option value="ts_rank(operating_income,252)">SOTA: Operating Income Momentum (252d)</option>
+                            <option value="-ts_rank(fn_liab_fair_val_l1_a,252)">SOTA: Fair Value Liability Acceleration</option>
+                            <option value="moving average crossover of volume and close">Moving Avg Crossover (Vol/Close)</option>
+                            <option value="mean reversion on 10 day vwap divergence">Mean Reversion (10d VWAP Divergence)</option>
+                            <option value="momentum acceleration rank over 30 days">Momentum Acceleration (30d Rank)</option>
+                            <option value="cross sectional neutralization of daily returns">Sector Neuralized Returns Matrix</option>
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col gap-2 mt-2">
                         <span className="text-[9px] uppercase tracking-widest text-white/30 font-mono">NATIVE LOGIC STRING</span>
                         <textarea 
                            className="w-full h-24 bg-white/5 border border-white/10 rounded p-2 text-white font-mono text-[10px] resize-none outline-none focus:border-red-500/50 transition-colors"
@@ -1513,6 +1605,8 @@ export const WorldQuantIQCPanel = () => {
                     </div>
                  </div>
               </div>
+              </Panel>
+              </PanelGroup>
            </div>
         </div>
     );

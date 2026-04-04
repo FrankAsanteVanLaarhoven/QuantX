@@ -41,6 +41,9 @@ export default function Home() {
     if (type === 'alphas' || type === 'data') {
       width = 800;
       height = 500;
+    } else if (type === 'iqc') {
+      width = 1300;
+      height = 900;
     }
 
     const newPanel = {
@@ -194,7 +197,7 @@ export default function Home() {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/10 via-[#0a0a0a] to-[#0a0a0a]" />
         {/* Subtle noise to simulate depth/glass */}
-        <div className="absolute inset-0 opacity-[0.015] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+        <div className="absolute inset-0 opacity-[0.015]" />
       </div>
 
       <AnimatePresence>
@@ -207,7 +210,7 @@ export default function Home() {
             className="absolute inset-0 z-50 flex items-center justify-center bg-black overflow-hidden"
           >
             {/* Monumental architectural grid overlay background */}
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] z-0 mix-blend-overlay pointer-events-none" />
+            <div className="absolute inset-0 opacity-[0.03] z-0 mix-blend-overlay pointer-events-none" />
             <motion.div 
                initial={{ backgroundPosition: "0px 0px" }}
                animate={{ backgroundPosition: "40px 40px" }}
