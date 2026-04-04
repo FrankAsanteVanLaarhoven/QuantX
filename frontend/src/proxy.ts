@@ -14,7 +14,7 @@ export const config = {
   ],
 }
 
-export function middleware(req: NextRequest) {
+export default function proxy(req: NextRequest) {
   const url = req.nextUrl;
   
   // Get hostname of request (e.g. quantxos.com, iqxos.com, localhost:3000)
