@@ -14,6 +14,25 @@ services:
     networks:
       - quantx_net
 
+  gemma-inference:
+    image: vllm/vllm-openai:latest
+    ports:
+      - "8001:8000"
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN}
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    command: ["--model", "google/gemma-4-9b-it", "--dtype", "auto"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - quantx_net
+
   frontend-spatial-os:
     build:
       context: ./frontend

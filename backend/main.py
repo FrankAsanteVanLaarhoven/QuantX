@@ -13,11 +13,12 @@ import pandas as pd
 import numpy as np
 from dotenv import load_dotenv
 
-from google import genai
-from google.genai import types
+import json
+from openai import OpenAI
 
 load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+VLLM_API_KEY = "dummy"
+VLLM_BASE_URL = "http://gemma-inference:8000/v1"
 
 app = FastAPI(title="QuantX Ephemeral Backend - SOTA Edition")
 
@@ -105,41 +106,33 @@ async def create_and_simulate_alpha(alpha_in: AlphaCreate):
 
 @app.post("/api/intent", response_model=IntentResponse)
 async def parse_intent(req: IntentRequest):
-    if not GEMINI_API_KEY:
-        q = req.query.lower()
-        action = "render_data_panel" if "data" in q else "render_alpha_table"
-        return IntentResponse(
-            action=action,
-            context=IntentContext(expression="mock_strat_no_api_key", region="US", universe="SPY")
-        )
-
     try:
-        client = genai.Client(api_key=GEMINI_API_KEY)
+        client = OpenAI(api_key=VLLM_API_KEY, base_url=VLLM_BASE_URL)
         system_instruction = '''
         You are the Intent Engine for QuantX, a Hedge Fund-grade ephemeral UI platform.
-        Return structured JSON based on user input. Extract tickers/expressions.
-        - "show alphas", "active strats" -> render_alpha_table
+        Return ONLY valid JSON based on user input. Extract tickers/expressions.
+        {"action": "must be exactly one of render_alpha_table, render_backtest_panel, render_error, render_data_panel, render_risk_panel", "context": {"expression": str, "region": str, "universe": str, "message": str}}
+        - "show alphas" -> render_alpha_table
         - "simulate momentum on AAPL" -> render_backtest_panel (expression="momentum", universe="AAPL")
-        - "show data for NVDA", "stock tracker" -> render_data_panel (universe="NVDA")
-        - "risk analysis for BTC", "risk" -> render_risk_panel (universe="BTC-USD")
-        - Unknown intent -> render_error (message="Could not parse intent")
+        - "show data for NVDA" -> render_data_panel (universe="NVDA")
         '''
         
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=req.query,
-            config=types.GenerateContentConfig(
-                system_instruction=system_instruction,
-                response_mime_type="application/json",
-                response_schema=IntentResponse,
-                temperature=0.0
-            )
+        response = client.chat.completions.create(
+            model="google/gemma-4-9b-it",
+            messages=[
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": req.query}
+            ],
+            temperature=0.0
         )
-        return IntentResponse.model_validate_json(response.text)
+        text = response.choices[0].message.content.strip()
+        if text.startswith("```json"): text = text[7:-3].strip()
+        elif text.startswith("```"): text = text[3:-3].strip()
+        return IntentResponse.model_validate_json(text)
     except Exception as e:
         return IntentResponse(
             action="render_error",
-            context=IntentContext(message="Failed to connect to Gemini LLM orchestrator.")
+            context=IntentContext(message="Failed to connect to Gemma LLM orchestrator.")
         )
 
 # -------------------------------------------------------------
@@ -345,16 +338,14 @@ def autonomous_cognitive_analysis(ticker: str, smoothing_factor: float = 1e-4):
         }}
         """
 
-        if not GEMINI_API_KEY:
-            return {"error": "Missing GEMINI_API_KEY for cognitive analysis."}
-            
-        client = genai.Client(api_key=GEMINI_API_KEY)
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
+        client = OpenAI(api_key=VLLM_API_KEY, base_url=VLLM_BASE_URL)
+        response = client.chat.completions.create(
+            model="google/gemma-4-9b-it",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.1
         )
 
-        text = response.text.strip()
+        text = response.choices[0].message.content.strip()
         if text.startswith("```json"):
             text = text[7:-3].strip()
         elif text.startswith("```"):
@@ -380,22 +371,18 @@ def suggest_alpha(req: AlphaRequest):
     """
     Uses Gemini LLM to act as a quant researcher formulating alphas based on sentiment.
     """
-    if not GEMINI_API_KEY:
-        return {"suggestion": "MOCK_ALPHA = (close - sma(20)) / std(20)", "rationale": "Mock generated alpha string due to missing API key."}
-        
     try:
-        client = genai.Client(api_key=GEMINI_API_KEY)
-        prompt = f"Act as a Senior Quant Researcher at WorldQuant. Generate a novel WorldQuant-style mathematical alpha expression based on this market sentiment: '{req.market_sentiment}'. Respond ONLY with a JSON object containing 'suggestion' (the mathematical expression) and 'rationale' (a 2-sentence explanation of why it works)."
+        client = OpenAI(api_key=VLLM_API_KEY, base_url=VLLM_BASE_URL)
+        prompt = f"Act as a Senior Quant Researcher at WorldQuant. Generate a novel WorldQuant-style mathematical alpha expression based on this market sentiment: '{req.market_sentiment}'. Respond ONLY with a valid JSON object containing 'suggestion' (the mathematical expression) and 'rationale' (a 2-sentence explanation of why it works)."
         
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-            )
+        response = client.chat.completions.create(
+            model="google/gemma-4-9b-it",
+            messages=[{"role": "user", "content": prompt}]
         )
-        import json
-        data = json.loads(response.text)
+        text = response.choices[0].message.content.strip()
+        if text.startswith("```json"): text = text[7:-3].strip()
+        elif text.startswith("```"): text = text[3:-3].strip()
+        data = json.loads(text)
         return data
     except Exception:
         return {"suggestion": "ts_rank(returns, 10)", "rationale": "Fallback momentum rank."}
@@ -412,26 +399,24 @@ def copilot_generate_alpha(req: CopilotRequest):
     """
     Direct Gemini 1.5 Pro interface for the Co-Pilot Widget.
     """
-    if not GEMINI_API_KEY:
-        return {"code": "rank(ts_std_dev(close, 20))", "explanation": "Fallback alpha due to missing API key."}
-        
     try:
-        client = genai.Client(api_key=GEMINI_API_KEY)
+        client = OpenAI(api_key=VLLM_API_KEY, base_url=VLLM_BASE_URL)
         system_instruction = '''
-        You are the QuantX Gemini Co-Pilot. A Hedge Fund researcher is asking you to build a quantitative WorldQuant-style Alpha logic.
+        You are the QuantX Gemma 4 Co-Pilot. A Hedge Fund researcher is asking you to build a quantitative WorldQuant-style Alpha logic.
         Respond ONLY with a valid JSON. Schema:
         {"code": "the alpha string like ts_rank(returns, 20)", "explanation": "short string explaining logic"}
         '''
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=req.prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=system_instruction,
-                response_mime_type="application/json",
-            )
+        response = client.chat.completions.create(
+            model="google/gemma-4-9b-it",
+            messages=[
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": req.prompt}
+            ]
         )
-        import json
-        data = json.loads(response.text)
+        text = response.choices[0].message.content.strip()
+        if text.startswith("```json"): text = text[7:-3].strip()
+        elif text.startswith("```"): text = text[3:-3].strip()
+        data = json.loads(text)
         return data
     except Exception as e:
         return {"code": "Error", "explanation": str(e)}
@@ -493,24 +478,13 @@ def hyper_allocate(req: AllocationRequest):
         }}
         """
 
-        if not GEMINI_API_KEY:
-            # Mock allocation if no key
-            w = 1.0 / len(valid_assets)
-            return {
-                "global_sharpe": 1.85,
-                "latency_ms": 1.4,
-                "allocations": [
-                    {"asset": a, "weight_pct": w, "allocated_capital": w * req.capital, "logic": "Mock equal weight due to missing API key."} for a in valid_assets
-                ]
-            }
-
-        client = genai.Client(api_key=GEMINI_API_KEY)
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
+        client = OpenAI(api_key=VLLM_API_KEY, base_url=VLLM_BASE_URL)
+        response = client.chat.completions.create(
+            model="google/gemma-4-9b-it",
+            messages=[{"role": "user", "content": prompt}]
         )
 
-        text = response.text.strip()
+        text = response.choices[0].message.content.strip()
         if text.startswith("```json"):
             text = text[7:-3].strip()
         elif text.startswith("```"):
@@ -655,24 +629,13 @@ def omniscient_macro_globe(req: MacroRequest):
             ]
         }}
         """
-        if not GEMINI_API_KEY:
-            return {
-                "global_threat_level": 82,
-                "nodes": [
-                    {"id": "E.U. Energy", "sentiment": -0.6, "impact_val": 85, "contagion_link": "Global Supply"},
-                    {"id": "U.S. Defense", "sentiment": 0.9, "impact_val": 70, "contagion_link": "Aerospace Equities"},
-                    {"id": "Taiwan Semi", "sentiment": -0.8, "impact_val": 95, "contagion_link": "Global Tech"},
-                    {"id": "Gold (XAU)", "sentiment": 0.7, "impact_val": 65, "contagion_link": "Treasury Yields"}
-                ]
-            }
-
-        client = genai.Client(api_key=GEMINI_API_KEY)
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
+        client = OpenAI(api_key=VLLM_API_KEY, base_url=VLLM_BASE_URL)
+        response = client.chat.completions.create(
+            model="google/gemma-4-9b-it",
+            messages=[{"role": "user", "content": prompt}]
         )
 
-        text = response.text.strip()
+        text = response.choices[0].message.content.strip()
         if text.startswith("```json"): text = text[7:-3].strip()
         elif text.startswith("```"): text = text[3:-3].strip()
 
