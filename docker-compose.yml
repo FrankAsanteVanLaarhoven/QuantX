@@ -33,6 +33,26 @@ services:
     networks:
       - quantx_net
 
+  personaplex-audio:
+    image: nvcr.io/nvidia/nemo:latest
+    ports:
+      - "8002:8000"
+    environment:
+      - MODEL_VARIANT=personaplex-7b-v1-s2s
+      - NVIDIA_VISIBLE_DEVICES=all
+      - MAX_LATENCY_MS=150
+      - BARGE_IN_THRESHOLD=0.6
+      - HF_TOKEN=${HF_TOKEN}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - quantx_net
+
   frontend-spatial-os:
     build:
       context: ./frontend
