@@ -1,0 +1,20 @@
+# QuantX Cross-Platform Edge Runtime Override
+# This file automatically overrides docker-compose.yml when running locally
+# to bypass the heavy NVIDIA/A100 requirements and utilize Ollama (llama.cpp)
+# for Apple Silicon and Edge node CPU execution compatibility.
+
+services:
+  gemma-inference:
+    image: ollama/ollama:latest
+    ports:
+      - "8001:11434"
+    environment:
+      # Bypass HF Token requirements as Ollama pulls pre-quantized GGUF directly
+      - OLLAMA_HOST=0.0.0.0
+    command: []
+    # Drop the strict NVIDIA reservation for local dev
+    deploy:
+      resources:
+        reservations: null
+    volumes:
+      - ./ollama_data:/root/.ollama

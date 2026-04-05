@@ -647,22 +647,111 @@ def omniscient_macro_globe(req: MacroRequest):
 # -------------------------------------------------------------
 # PHASE 4: Telemetric WebSockets
 # -------------------------------------------------------------
+# -------------------------------------------------------------
+# PHASE 4 & 5: Autonomous Multi-Agent Swarm & WebSockets
+# -------------------------------------------------------------
 import random
+import json
 
-@app.websocket("/ws/telemetry")
-async def websocket_telemetry(websocket: WebSocket):
-    await websocket.accept()
+# Swarm Tool Definitions
+gemma_tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_live_market_data",
+            "description": "Fetches real-time price and momentum data for a ticker to ground the Gemma Agent's reasoning.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "ticker": {"type": "string", "description": "The stock ticker symbol (e.g. AAPL)"}
+                },
+                "required": ["ticker"]
+            }
+        }
+    }
+]
+
+def get_live_market_data(ticker: str):
     try:
-        while True:
+        data = yf.download(ticker, period="5d", interval="1d", progress=False)
+        close_col = 'Adj Close' if 'Adj Close' in data.columns else 'Close'
+        prices = data[close_col][ticker].dropna().values if isinstance(data.columns, pd.MultiIndex) else data[close_col].dropna().values
+        return json.dumps({"ticker": ticker, "latest_price": float(prices[-1]), "momentum_5d": float((prices[-1] - prices[0])/prices[0] * 100)})
+    except Exception as e:
+        return json.dumps({"error": str(e)})
+
+async def autonomous_swarm_loop(websocket: WebSocket):
+    # The SOTA Genesis Loop
+    client = OpenAI(api_key=VLLM_API_KEY, base_url=VLLM_BASE_URL)
+    universe = ["NVDA", "AAPL", "MSFT", "TSLA", "BTC-USD"]
+    
+    while True:
+        try:
+            target = random.choice(universe)
+            
+            # Agent 1: Alpha Generator (using tools)
+            msg1 = client.chat.completions.create(
+                model="google/gemma-4-9b-it",
+                messages=[{"role": "user", "content": f"Use your tool to check live data for {target}. Then propose a WorldQuant Alpha. Output just the raw JSON: {{'alpha': '...', 'rationale': '...', 'target': '{target}'}}"}],
+                tools=gemma_tools
+            )
+            
+            # Execute Native Tool Call if requested by Agent 1
+            if msg1.choices[0].message.tool_calls:
+                tool_call = msg1.choices[0].message.tool_calls[0]
+                args = json.loads(tool_call.function.arguments)
+                tool_result = get_live_market_data(args.get("ticker", target))
+                
+                # Resubmit with tool context
+                msg1 = client.chat.completions.create(
+                    model="google/gemma-4-9b-it",
+                    messages=[
+                        {"role": "user", "content": f"Use your tool to check live data for {target}. Then propose a WorldQuant Alpha. Output just the raw JSON."},
+                        {"role": "assistant", "tool_calls": [tool_call]},
+                        {"role": "tool", "content": tool_result, "tool_call_id": tool_call.id}
+                    ]
+                )
+            
+            raw_alpha = msg1.choices[0].message.content
+            
+            # Agent 2: Risk Scrutiny (Debate)
+            msg2 = client.chat.completions.create(
+                model="google/gemma-4-9b-it",
+                messages=[{"role": "user", "content": f"You are the Risk Arbitrator. Analyze this generated alpha: {raw_alpha}. If it's overfit, rewrite it. Output ONLY the finalized JSON alpha configuration."}]
+            )
+            
+            final_swarm_output = msg2.choices[0].message.content
+            
+            # Stream the debated, tool-fortified SOTA Alpha back to the websocket
             payload = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "node": "Genesis Swarm - Alpha Forged",
+                "autonomous_payload": final_swarm_output,
+                "latency_us": random.randint(300, 500)
+            }
+            await websocket.send_json(payload)
+            await asyncio.sleep(8)
+            
+            # Interleave standard telemetry
+            telemetry = {
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "pulse_bpm": random.randint(120, 180),
                 "global_liquidity_vol": float(np.random.normal(5000000, 10000)),
                 "active_hft_nodes": random.randint(1000, 1050),
                 "latency_us": random.randint(800, 1200)
             }
-            await websocket.send_json(payload)
-            await asyncio.sleep(0.05)
+            await websocket.send_json(telemetry)
+            await asyncio.sleep(2)
+            
+        except Exception as e:
+            await asyncio.sleep(5)
+
+@app.websocket("/ws/telemetry")
+async def websocket_telemetry(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        # Ignite the Autonomous Swarm inside the channel connection
+        await autonomous_swarm_loop(websocket)
     except WebSocketDisconnect:
         pass
 
