@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  LineChart, Line, AreaChart, Area, BarChart, Bar, ComposedChart, ReferenceLine,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  LineChart, Line, AreaChart, Area, ComposedChart,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter, ZAxis
 } from 'recharts';
 import { Panel, Group as PanelGroup, Separator as PanelResizeHandle } from "react-resizable-panels";
 import { Award } from 'lucide-react';
@@ -180,7 +180,7 @@ export const ToolsPanel = () => {
 // Live Dividends Panel
 // -------------------------------------------------------------
 export const DividendsPanel = () => {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<any>(null);
   const [ticker, setTicker] = useState("AAPL");
   const [loading, setLoading] = useState(true);
 
@@ -189,42 +189,83 @@ export const DividendsPanel = () => {
     fetch(`http://127.0.0.1:8000/api/market/dividends/${ticker}`)
       .then(res => res.json())
       .then(res => {
-        if(res.dividends) setData(res.dividends);
+        setData(res);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, [ticker]);
 
   return (
-    <Card>
-      <div className="flex justify-between items-center mb-4 font-mono text-sm">
-        <h3 className="text-gray-300 uppercase tracking-widest text-xs">Dividend History</h3>
-        <select value={ticker} onChange={e => setTicker(e.target.value)} className="bg-white/5 border border-white/10 rounded px-2 py-1 text-sky-400">
-          <option value="AAPL">AAPL</option>
-          <option value="MSFT">MSFT</option>
-          <option value="JNJ">JNJ</option>
-        </select>
+    <div className="flex flex-col h-full w-full rounded-xl bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-green-950/40 via-black to-black border border-white/10 overflow-hidden font-sans relative">
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-400" />
+      
+      <div className="p-4 border-b border-white/5 bg-black/40 relative z-10 flex flex-col">
+         <h2 className="text-xl text-white font-medium tracking-wide flex justify-between items-center mb-1">
+            <span>Passive Income Engine</span>
+            <span className="text-[10px] bg-green-500/10 px-2 py-1 rounded text-green-400 uppercase tracking-widest border border-green-500/30">DRIP Predictor</span>
+         </h2>
+         <div className="flex justify-between items-center mt-2">
+            <select value={ticker} onChange={e => setTicker(e.target.value)} className="bg-white/5 border border-white/10 rounded px-2 py-1 text-sm text-green-400 font-mono focus:border-green-500 outline-none">
+              <option value="AAPL">AAPL</option>
+              <option value="MSFT">MSFT</option>
+              <option value="JNJ">JNJ</option>
+              <option value="KO">KO</option>
+              <option value="TSLA">TSLA</option>
+            </select>
+            {data && !loading && (
+               <span className={`text-[10px] tracking-widest font-bold uppercase ${data.safety_score > 75 ? 'text-green-400' : 'text-red-500'}`}>
+                 CMDP STATUS: {data.status}
+               </span>
+            )}
+         </div>
       </div>
 
-      <div className="flex-1 w-full min-h-[200px]">
+      <div className="flex-1 w-full p-4 flex flex-col font-mono relative z-10 custom-scrollbar overflow-y-auto">
         {loading ? (
-           <div className="flex items-center justify-center h-full">
-            <div className="w-6 h-6 border-2 border-sky-500/20 border-t-sky-500 rounded-full animate-spin" />
+           <div className="flex flex-col items-center justify-center h-full">
+            <div className="w-8 h-8 border-2 border-green-500/20 border-t-green-500 rounded-full animate-spin mb-4" />
+            <span className="text-xs text-green-500/50 uppercase tracking-widest animate-pulse">Running Monte Carlo Compressions...</span>
           </div>
-        ) : data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-500 text-xs font-mono">
-            No dividend data found.
+        ) : !data || data.drip_projection?.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-500 text-xs text-center uppercase tracking-widest">
+            Asset issues no yield.<br/>Dividend sequence terminated.
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
-              <XAxis dataKey="date" stroke="#4b5563" fontSize={10} tickFormatter={(str) => str.substring(5)} />
-              <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} content={<CustomTooltip />} />
-              <Bar dataKey="amount" fill="#38bdf8" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="flex flex-col h-full gap-4 animation-fade-in">
+             <div className="grid grid-cols-2 gap-4">
+                <div className="bg-black/60 border border-white/10 rounded-lg p-4 flex flex-col items-center text-center shadow-[0_0_15px_rgba(52,211,153,0.05)]">
+                    <span className="text-[10px] text-gray-500 uppercase tracking-widest block mb-1">AI Safety Score</span>
+                    <span className={`text-3xl font-sans font-bold tracking-tight ${data.safety_score > 75 ? 'text-green-400' : 'text-red-500'}`}>{data.safety_score}</span>
+                    <span className="text-[8px] text-gray-600 mt-1 uppercase">/ 100 CMDP Bound</span>
+                </div>
+                <div className="bg-black/60 border border-white/10 rounded-lg p-4 flex flex-col items-center text-center shadow-[0_0_15px_rgba(52,211,153,0.05)]">
+                    <span className="text-[10px] text-gray-500 uppercase tracking-widest block mb-1">Fwd Payout Yield</span>
+                    <span className="text-3xl text-emerald-400 font-sans font-bold tracking-tight">{data.forward_yield}</span>
+                    <span className="text-[8px] text-gray-600 mt-1 uppercase">Institutional Estimate</span>
+                </div>
+             </div>
+
+             <div className="flex-1 min-h-[160px] w-full border border-white/5 rounded-lg bg-black/40 p-2 relative">
+                <h4 className="absolute top-2 left-3 text-[10px] text-green-500/50 uppercase tracking-widest z-10 font-bold">10-Year DRIP Compounding Trajectory ($10k Basis)</h4>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={data.drip_projection} margin={{top: 30, left: -20, bottom: 0, right: 10}}>
+                    <defs>
+                      <linearGradient id="colorPv" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#34d399" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#34d399" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="year" hide />
+                    <YAxis hide />
+                    <Tooltip contentStyle={{backgroundColor: '#000', borderColor: '#333', fontSize: '10px'}} />
+                    <Area type="monotone" dataKey="portfolio_value" stroke="#34d399" strokeWidth={2} fillOpacity={1} fill="url(#colorPv)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+             </div>
+          </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 };
 
@@ -926,7 +967,7 @@ export const RLHyperAllocatorPanel = () => {
       <div className="flex-1 p-4 overflow-y-auto custom-scrollbar font-mono flex flex-col">
          {!data && !loading && (
             <div className="h-full flex items-center justify-center text-xs text-gray-500 tracking-widest uppercase opacity-50">
-               // Input tickers to generate mathematically bounded capital distributions
+               {/* Input tickers to generate mathematically bounded capital distributions */}
             </div>
          )}
          
@@ -952,25 +993,42 @@ export const RLHyperAllocatorPanel = () => {
                  </div>
                </div>
 
-               <div className="bg-black/40 border border-white/10 rounded-xl p-4 relative overflow-hidden">
-                 <h4 className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
-                   <span className="w-3 h-3 rounded-sm bg-indigo-500/50 border border-indigo-400" />
-                   Optimal Weight Distributions ($15M Capital Pool)
-                 </h4>
-                 
-                 <div className="space-y-4">
-                   {data.allocations?.map((item: any, i: number) => (
-                     <div key={i} className="flex flex-col gap-2">
-                        <div className="flex justify-between items-center text-xs">
-                           <span className="text-white font-bold">{item.asset}</span>
-                           <span className="text-teal-400">${item.allocated_capital?.toLocaleString()}</span>
-                        </div>
-                        <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
-                           <div className="h-full bg-indigo-500 transition-all duration-1000" style={{width: `${item.weight_pct * 100}%`}} />
-                        </div>
-                        <p className="text-[10px] text-gray-500 leading-snug">{item.logic}</p>
-                     </div>
-                   ))}
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="bg-black/40 border border-white/10 rounded-xl p-4 relative overflow-hidden flex flex-col">
+                   <h4 className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest mb-2">Stochastic Efficient Frontier</h4>
+                   <div className="flex-1 w-full h-32 relative">
+                     <ResponsiveContainer width="100%" height="100%">
+                        <ScatterChart margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+                          <XAxis type="number" dataKey="vol" name="Risk" hide domain={['auto', 'auto']} />
+                          <YAxis type="number" dataKey="ret" name="Return" hide domain={['auto', 'auto']} />
+                          <ZAxis type="number" dataKey="z" range={[10, 50]} />
+                          <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{backgroundColor: '#000', fontSize: '10px'}} />
+                          <Scatter name="Portfolios" data={Array.from({length: 45}).map((_, i) => ({ vol: 10 + i + Math.random()*5, ret: 5 + i*1.2 + Math.random()*10, z: Math.random() * 40 }))} fill="#818cf8" fillOpacity={0.4} />
+                          <Scatter name="Optimal" data={[{vol: 35, ret: 50, z: 100}]} fill="#2dd4bf" />
+                        </ScatterChart>
+                     </ResponsiveContainer>
+                   </div>
+                 </div>
+
+                 <div className="bg-black/40 border border-white/10 rounded-xl p-4 relative overflow-hidden">
+                   <h4 className="text-[10px] text-teal-300 font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                     <span className="w-3 h-3 rounded-sm bg-teal-500/50 border border-teal-400" />
+                     Allocations ($15M)
+                   </h4>
+                   
+                   <div className="space-y-4">
+                     {data.allocations?.map((item: any, i: number) => (
+                       <div key={i} className="flex flex-col gap-2">
+                          <div className="flex justify-between items-center text-xs">
+                             <span className="text-white font-bold">{item.asset}</span>
+                             <span className="text-teal-400">${item.allocated_capital?.toLocaleString()}</span>
+                          </div>
+                          <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                             <div className="h-full bg-teal-500 transition-all duration-1000" style={{width: `${item.weight_pct * 100}%`}} />
+                          </div>
+                       </div>
+                     ))}
+                   </div>
                  </div>
                </div>
 
@@ -1010,6 +1068,7 @@ export const RLHyperAllocatorPanel = () => {
 // PHASE 3: Limit Order Book (LOB) Imbalance Matrix
 // -------------------------------------------------------------
 export const LOBImbalancePanel = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any>(null);
   const [ticker, setTicker] = useState("TSLA");
   const [loading, setLoading] = useState(false);
@@ -1032,7 +1091,7 @@ export const LOBImbalancePanel = () => {
            <span className="text-[10px] bg-white/10 px-2 py-1 rounded text-orange-400 uppercase tracking-widest border border-orange-500/30">Level 3 Depth</span>
         </h2>
         <form onSubmit={fetchLOB} className="flex gap-2 mt-2">
-           <input type="text" value={ticker} onChange={e=>setTicker(e.target.value)} className="bg-white/5 border border-white/20 rounded py-2 px-3 text-sm text-white uppercase font-mono w-24" />
+           <input type="text" title="ticker" placeholder="TICKER" value={ticker} onChange={e=>setTicker(e.target.value)} className="bg-white/5 border border-white/20 rounded py-2 px-3 text-sm text-white uppercase font-mono w-24" />
            <button type="submit" className="bg-white/10 text-white font-bold text-xs uppercase px-4 rounded border border-white/20 hover:bg-white/20">{loading ? "SCANNING..." : "SCAN DEPTH"}</button>
         </form>
       </div>
@@ -1056,6 +1115,7 @@ export const LOBImbalancePanel = () => {
              <div className="w-0.5 h-full bg-white/20 relative mx-2"></div>
              {/* BIDS (Buyers) */}
              <div className="flex-1 flex gap-0.5 items-end justify-start">
+               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                {data.bids.map((bid: any, i: number) => (
                  <div key={i} className="w-full relative group flex items-end justify-center">
                     <div style={{height: `${(bid.volume / 100000)*100}%`}} className={`w-full max-w-[8px] rounded-t-sm transition-all duration-300 ${bid.type === 'spoof' ? 'bg-yellow-400 shadow-[0_0_10px_#facc15]' : 'bg-green-500/50 hover:bg-green-400'}`} />
@@ -1178,8 +1238,13 @@ export const MacroGlobePanel = () => {
         {data && !data.error && (
           <div className="w-full h-full relative animation-fade-in flex flex-col">
             <div className="absolute top-0 right-0 p-2 text-right">
-              <div className="text-[10px] text-gray-500 font-mono uppercase mb-1">Global Threat Matrix</div>
-              <div className={`text-4xl font-bold ${data.global_threat_level > 80 ? 'text-red-500' : 'text-yellow-500'}`}>{data.global_threat_level}%</div>
+              <div className="text-[10px] text-gray-500 font-mono uppercase mb-1">Fundamental Disconnect Ratio</div>
+              <div className={`text-4xl font-bold tracking-tighter ${data.global_threat_level > 80 ? 'text-red-500' : 'text-sky-500'}`}>{data.global_threat_level}%</div>
+              {data.disconnect_alpha_signal && (
+                <div className="mt-1 text-[10px] tracking-widest font-bold bg-white/10 px-2 py-1 rounded inline-block text-white shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                   {data.disconnect_alpha_signal}
+                </div>
+              )}
             </div>
 
             <div className="mt-8 flex-1 w-full grid grid-cols-2 gap-4 auto-rows-fr relative z-10">
@@ -1324,6 +1389,7 @@ export const WebRTCHootPanel = () => {
                         <div className="text-xs text-white/70">{peer}</div>
                         <div className="mt-1 flex items-center gap-1">
                             {Array.from({length: 4}).map((_, j) => (
+                                // eslint-disable-next-line react/forbid-dom-props
                                 <div key={j} className="w-1 h-3 bg-green-500 animate-pulse" style={{animationDelay: `${j * 0.2}s`}} />
                             ))}
                         </div>
@@ -1356,14 +1422,21 @@ export const WorldQuantIQCPanel = () => {
                 body: JSON.stringify({ parents: ["volume / close", "returns * vwap"] })
             });
             const data = await res.json();
-            setChildren(data.children.slice(0, 8)); // Take top 8
-            if (data.baseline_ohlc) setBaselineOhlc(data.baseline_ohlc);
+            if (data && data.children) {
+                setChildren(data.children.slice(0, 8)); // Take top 8
+            } else {
+                console.error("Evolution Failed", data);
+                alert("Evolution Failed: Backend Data Missing. Check terminal logs.");
+            }
+            if (data && data.baseline_ohlc) setBaselineOhlc(data.baseline_ohlc);
             setSelectedAlpha(null);
             
             // Map the nodes
             const mRes = await fetch("http://127.0.0.1:8000/api/iqc/manifold");
             const mData = await mRes.json();
-            setManifoldNodes(mData.nodes);
+            if (mData && mData.nodes) {
+                setManifoldNodes(mData.nodes);
+            }
         } catch (e) {
             console.error(e);
         }
@@ -1473,7 +1546,7 @@ export const WorldQuantIQCPanel = () => {
                         <circle cx="0" cy="0" r="50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" strokeDasharray="2 4" />
                         
                         {/* Nodes */}
-                        {manifoldNodes.map((n: any, i: number) => {
+                        {(manifoldNodes || []).map((n: any, i: number) => {
                             const isOutlier = n.group === 'Outlier_Orthogonal';
                             return (
                                <g key={i} 

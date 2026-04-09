@@ -12,9 +12,6 @@ services:
       # Bypass HF Token requirements as Ollama pulls pre-quantized GGUF directly
       - OLLAMA_HOST=0.0.0.0
     command: []
-    # Drop the strict NVIDIA reservation for local dev
-    deploy:
-      resources:
-        reservations: null
+
     volumes:
       - ./ollama_data:/root/.ollama

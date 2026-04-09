@@ -67,7 +67,23 @@ export function GlassSidebar({ onSpawnPanel }: GlassSidebarProps) {
           </div>
           
           <div className="flex flex-col gap-1 w-full">
-            {MENU_ITEMS.map((item) => (
+            {MENU_ITEMS.map((item) => {
+              if (item.id === 'iqc2026') {
+                return (
+                  <a
+                    key={item.id}
+                    href="/iqc2026"
+                    className="group flex items-center gap-4 px-3 py-3 rounded-xl text-sm text-gray-400 hover:bg-white/[0.05] hover:text-sky-300 transition-all w-full text-left relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-sky-500/0 via-sky-500/0 to-sky-500/10 opacity-0 group-active:opacity-100 transition-opacity" />
+                    <span className="text-gray-500 group-hover:text-sky-400 transition-colors shrink-0">{item.icon}</span>
+                    <span className={`font-medium tracking-wide transition-opacity duration-300 whitespace-nowrap ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+                      {item.name}
+                    </span>
+                  </a>
+                );
+              }
+              return (
               <button
                 key={item.id}
                 onClick={() => onSpawnPanel(item.id, item.name)}
@@ -83,7 +99,7 @@ export function GlassSidebar({ onSpawnPanel }: GlassSidebarProps) {
                   {item.name}
                 </span>
               </button>
-            ))}
+            )})}
           </div>
         </div>
         

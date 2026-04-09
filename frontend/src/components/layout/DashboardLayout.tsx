@@ -80,15 +80,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   {group.section}
                 </div>
                 <div className="flex flex-col gap-1">
-                  {group.items.map((item) => (
-                    <button
-                      key={item.name}
-                      className="flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-sky-400 transition-all w-full text-left"
-                    >
-                      <span className="text-gray-400">{item.icon}</span>
-                      {item.name}
-                    </button>
-                  ))}
+                  {group.items.map((item) => {
+                    const href = item.name === 'IQC 2026' ? '/iqc2026' : '#';
+                    return (
+                      <Link
+                        key={item.name}
+                        href={href}
+                        className="flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-sky-400 transition-all w-full text-left"
+                      >
+                        <span className="text-gray-400">{item.icon}</span>
+                        {item.name}
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             ))}

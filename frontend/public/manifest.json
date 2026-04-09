@@ -1,16 +1,18 @@
 {
-  "name": "QuantX - Omniscient Math OS",
+  "name": "QuantX Sentinel",
   "short_name": "QuantX",
-  "description": "Institutional Spatial Intelligence & Alpha Sandbox",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
+  "description": "Institutional Autonomous AI Engine",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "landscape"
 }

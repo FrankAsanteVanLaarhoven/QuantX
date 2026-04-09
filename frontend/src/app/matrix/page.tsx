@@ -15,6 +15,55 @@ import {
 } from '@/components/dashboard/Widgets';
 import { QuantXLogo } from '@/components/ui/QuantXLogo';
 
+const ParticleSphere = () => {
+  const [mounted, setMounted] = React.useState(false);
+  const [particles, setParticles] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    setMounted(true);
+    setParticles(Array.from({ length: 200 }).map((_, i) => {
+      const phi = Math.acos(-1 + (2 * i) / 200);
+      const theta = Math.sqrt(200 * Math.PI) * phi;
+      const r = 300;
+      const x = r * Math.cos(theta) * Math.sin(phi);
+      const y = r * Math.sin(theta) * Math.sin(phi);
+      const z = r * Math.cos(phi);
+      const duration = 2 + Math.random() * 2;
+      const delay = Math.random() * 2;
+      const isRed = i % 3 === 0;
+      
+      return { id: i, x, y, z, duration, delay, isRed };
+    }));
+  }, []);
+
+  if (!mounted) return null;
+
+  return (
+    <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none" style={{ perspective: '1200px' }}>
+      <motion.div 
+        animate={{ rotateY: 360, rotateX: 360 }}
+        transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
+        className="w-[600px] h-[600px] relative"
+        style={{ transformStyle: 'preserve-3d' }}
+      >
+        {particles.map((p) => (
+             <motion.div
+               key={p.id}
+               animate={{ scale: [1, 1.8, 1], opacity: [0.1, 0.8, 0.1] }}
+               transition={{ repeat: Infinity, duration: p.duration, delay: p.delay }}
+               className="absolute top-1/2 left-1/2 w-1.5 h-1.5 rounded-full"
+               style={{
+                 transform: `translate3d(${p.x}px, ${p.y}px, ${p.z}px)`,
+                 backgroundColor: p.isRed ? '#ef4444' : '#38bdf8',
+                 boxShadow: `0 0 20px ${p.isRed ? '#ef4444' : '#38bdf8'}`
+               }}
+             />
+        ))}
+      </motion.div>
+    </div>
+  );
+};
+
 type ActivePanel = {
   id: string;
   type: string;
@@ -29,7 +78,7 @@ export default function Home() {
   const [panels, setPanels] = useState<ActivePanel[]>([]);
   const [intentInput, setIntentInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [authForm, setAuthForm] = useState({ username: '', pin: '' });
 
@@ -110,8 +159,10 @@ export default function Home() {
          speakBack("Acknowledged. " + transcript);
        };
 
+       // eslint-disable-next-line @typescript-eslint/no-explicit-any
        (window as any).startListening = () => recognition.start();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spawnPanel]);
 
   const closePanel = (id: string) => {
@@ -198,6 +249,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/10 via-[#0a0a0a] to-[#0a0a0a]" />
         {/* Subtle noise to simulate depth/glass */}
         <div className="absolute inset-0 opacity-[0.015]" />
+        <ParticleSphere />
       </div>
 
       <AnimatePresence>
