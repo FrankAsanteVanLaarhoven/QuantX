@@ -1,9 +1,12 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import { 
   BarChart2, BookOpen, Database, Target, Users, Globe, Brain, 
-  LineChart, PieChart, TrendingUp, Calendar, Zap, Award, UserPlus, FileText, ChevronDown 
+  LineChart, PieChart, TrendingUp, Calendar, Zap, Award, UserPlus, FileText, ChevronDown, Menu 
 } from 'lucide-react';
 import Link from 'next/link';
+import { QuantXLogo } from '../ui/QuantXLogo';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -41,19 +44,29 @@ const SIDEBAR_LINKS = [
 ];
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
   return (
-    <div className="min-h-screen bg-[#111827] text-white flex flex-col font-sans">
+    <div className="min-h-screen bg-[#020204] text-white flex flex-col font-sans selection:bg-red-500/30">
       {/* Top Navbar */}
-      <header className="h-14 bg-[#1f2937] border-b border-gray-700 flex items-center px-4 justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-2 text-sky-400 font-bold text-xl tracking-wider">
-            <Brain className="text-sky-400" />
-            <span>QUANT<span className="text-white">X</span></span>
+      <header className="h-16 bg-[#0A0A0E]/80 backdrop-blur-xl border-b border-white/5 flex items-center px-6 justify-between sticky top-0 z-50">
+        <div className="flex items-center gap-10">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="text-gray-500 hover:text-white transition-colors"
+            >
+              <Menu size={20} />
+            </button>
+            <Link href="/" className="flex items-center gap-3 text-white font-bold text-xl tracking-widest drop-shadow-md hover:scale-[1.02] transition-transform">
+              <QuantXLogo size={28} className="text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
+              <span className="tracking-tighter">QUANT<span className="font-light text-red-500">X</span></span>
+            </Link>
           </div>
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-8">
             {TOP_NAV_LINKS.map((link) => (
-              <button key={link.name} className="flex items-center gap-2 text-sm text-gray-300 hover:text-sky-400 transition-colors font-medium">
-                <span className="text-gray-400">{link.icon}</span>
+              <button key={link.name} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors font-medium tracking-wide">
+                <span className="text-gray-500">{link.icon}</span>
                 {link.name}
               </button>
             ))}
@@ -61,22 +74,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="w-8 h-8 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center border border-sky-500/30">
+          <button className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center border border-white/5 transition-colors">
             <UserPlus size={16} />
-          </div>
-          <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-            <span className="text-xs font-bold">FV</span>
+          </button>
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-800 to-black border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] flex items-center justify-center">
+            <span className="text-xs font-bold text-gray-300">FV</span>
           </div>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-64 bg-[#1f2937] border-r border-gray-700 hidden lg:block overflow-y-auto">
-          <div className="p-4">
+        <aside className={`bg-[#0A0A0E] border-white/5 hidden lg:block overflow-y-auto transition-all duration-300 ease-in-out whitespace-nowrap ${isSidebarCollapsed ? 'w-0 border-r-0 opacity-0' : 'w-64 border-r opacity-100'}`}>
+          <div className="p-5 min-w-[16rem]">
             {SIDEBAR_LINKS.map((group, idx) => (
               <div key={idx} className="mb-8">
-                <div className="text-xs font-bold text-gray-500 uppercase tracking-widest mx-2 mb-3">
+                <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mx-3 mb-4">
                   {group.section}
                 </div>
                 <div className="flex flex-col gap-1">
@@ -86,10 +99,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                       <Link
                         key={item.name}
                         href={href}
-                        className="flex items-center gap-3 px-2 py-2.5 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-sky-400 transition-all w-full text-left"
+                        className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:bg-white/5 hover:text-white transition-all w-full text-left relative overflow-hidden"
                       >
-                        <span className="text-gray-400">{item.icon}</span>
-                        {item.name}
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <span className="text-gray-600 group-hover:text-red-400 transition-colors">{item.icon}</span>
+                        <span className="font-medium tracking-wide">{item.name}</span>
                       </Link>
                     );
                   })}
@@ -100,8 +114,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-[#111827] p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto bg-transparent relative">
+          {/* Subtle background glow */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-red-900/10 blur-[120px] pointer-events-none" />
+          <div className="relative z-10 h-full">
             {children}
           </div>
         </main>

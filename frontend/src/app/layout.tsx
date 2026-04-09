@@ -35,10 +35,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${montserrat.variable} ${jetbrainsMono.variable} h-full antialiased font-sans`}
     >
-      <body className="min-h-full flex flex-col font-montserrat">
+      <body className="min-h-full flex flex-col font-montserrat select-none" style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
         {children}
         <script 
           dangerouslySetInnerHTML={{
@@ -51,6 +49,27 @@ export default function RootLayout({
                   );
                 });
               }
+
+              // SOTA Anti-Cloning & IP Protection Hooks
+              document.addEventListener('contextmenu', e => e.preventDefault());
+              document.addEventListener('copy', e => {
+                e.clipboardData.setData('text/plain', 'QuantX Intellectual Property. Unauthorized extraction is strictly prohibited and logged.');
+                e.preventDefault();
+              });
+              document.addEventListener('cut', e => e.preventDefault());
+              document.addEventListener('selectstart', e => e.preventDefault());
+              document.addEventListener('dragstart', e => e.preventDefault());
+              
+              document.addEventListener('keydown', e => {
+                  // Prevent Ctrl/Cmd + C, S, P, U (View Source)
+                  if ((e.ctrlKey || e.metaKey) && ['c', 'C', 's', 'S', 'p', 'P', 'u', 'U'].includes(e.key)) {
+                      e.preventDefault();
+                  }
+                  // Prevent F12 and DevTools shortcuts
+                  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key))) {
+                      e.preventDefault();
+                  }
+              });
             `
           }}
         />

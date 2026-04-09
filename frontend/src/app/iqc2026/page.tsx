@@ -5,6 +5,12 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import OverfittingGuard from '@/components/iqc/OverfittingGuard';
 import ConcentrationManager from '@/components/iqc/ConcentrationManager';
 import SentimentAlphaBuilder from '@/components/iqc/SentimentAlphaBuilder';
+import SotaBenchmarkDashboard from '@/components/iqc/SotaBenchmarkDashboard';
+import HyperTuner from '@/components/iqc/HyperTuner';
+import OrthogonalizationFoundry from '@/components/iqc/OrthogonalizationFoundry';
+import CmdpExtractor from '@/components/iqc/CmdpExtractor';
+import RlAllocator from '@/components/iqc/RlAllocator';
+import McpSubmitter from '@/components/iqc/McpSubmitter';
 
 export default function IQC2026Page() {
     return (
@@ -29,16 +35,31 @@ export default function IQC2026Page() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Left Column */}
-                        <div className="space-y-6">
+                        <div className="space-y-6 flex flex-col h-full">
                             <OverfittingGuard />
                             <ConcentrationManager />
                         </div>
 
                         {/* Right Column */}
-                        <div className="space-y-6">
+                        <div className="space-y-6 flex flex-col h-full">
                             <SentimentAlphaBuilder />
+                            <OrthogonalizationFoundry />
                         </div>
                     </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <CmdpExtractor />
+                        <RlAllocator />
+                    </div>
+
+                    <McpSubmitter />
+
+                    {/* Full Width Span */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <HyperTuner />
+                    </div>
+
+                    <SotaBenchmarkDashboard />
                 </div>
             </div>
         </DashboardLayout>

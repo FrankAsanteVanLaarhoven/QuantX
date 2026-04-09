@@ -16,11 +16,43 @@ from dotenv import load_dotenv
 import json
 from openai import OpenAI
 
+from app.services.data_sync import data_sync_engine
+from app.services.wq_agent import wq_submitter
+
 load_dotenv()
 VLLM_API_KEY = "dummy"
 VLLM_BASE_URL = "http://gemma-inference:8000/v1"
 
 app = FastAPI(title="QuantX Ephemeral Backend - SOTA Edition")
+
+@app.get("/api/worldquant/status")
+async def wq_status():
+    """Live telemetry stream for the Stealth MCP"""
+    return await wq_submitter.get_status()
+
+@app.post("/api/worldquant/start")
+async def wq_start():
+    """Ignite the Stealth Execution Matrix"""
+    await wq_submitter.start_raid()
+    return {"status": "Agent Initiated"}
+
+@app.post("/api/worldquant/stop")
+async def wq_stop():
+    """Abort the Stealth MCP execution"""
+    await wq_submitter.stop_raid()
+    return {"status": "Agent Terminated"}
+
+@app.get("/api/sync/yfinance")
+async def sync_yfinance():
+    """Live OCHLV synchronization endpoint"""
+    data = await data_sync_engine.fetch_yfinance_universe()
+    return data
+
+@app.get("/api/sync/bing")
+async def sync_bing():
+    """Live Sentiment synchronization endpoint"""
+    data = await data_sync_engine.fetch_bing_sentiment()
+    return data
 
 # -------------------------------------------------------------
 # PHASE 4 (Omega Architecture): On-Chain MEV Sentinel
