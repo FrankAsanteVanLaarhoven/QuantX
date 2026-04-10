@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -35,10 +36,14 @@ export default function RootLayout({
 }>) {
   return (
     <html
+      lang="en"
+      className={`${montserrat.variable} ${jetbrainsMono.variable} h-full antialiased font-sans`}
     >
       <body className="min-h-full flex flex-col font-montserrat select-none" style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}>
         {children}
-        <script 
+        <Script 
+          id="anti-cloning" 
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {

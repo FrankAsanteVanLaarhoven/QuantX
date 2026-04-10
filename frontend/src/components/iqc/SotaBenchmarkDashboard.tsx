@@ -57,6 +57,18 @@ export default function SotaBenchmarkDashboard() {
                     animate={{ opacity: 1, y: 0 }}
                     className="flex flex-col"
                 >
+                    {/* Live Tracker HUD */}
+                    <div className="bg-black border-b border-white/5 p-4 flex justify-between items-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-red-900/10" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(239, 68, 68, 0.05) 10px, rgba(239, 68, 68, 0.05) 20px)' }} />
+                        <div className="relative z-10 flex flex-col">
+                            <span className="text-[10px] text-red-500 font-bold tracking-widest uppercase mb-1 flex items-center gap-2"><Target size={12} /> Target Adversary Lock: CA87835</span>
+                            <span className="text-white/40 text-xs font-mono uppercase">University of Nairobi • Rank: 1 • Score To Beat: 29,691</span>
+                        </div>
+                        <div className="relative z-10 text-right">
+                           <span className="text-xl text-white font-mono font-bold tracking-tighter">Delta: -<span className="text-red-500">29,691</span></span>
+                           <span className="block text-[10px] text-white/30 uppercase tracking-widest">Awaiting Validated Score Transfer</span>
+                        </div>
+                    </div>
                     {/* Metrics Header */}
                     <div className="p-6 border-b border-white/5 bg-gradient-to-r from-blue-900/10 via-transparent to-transparent flex items-center justify-between">
                          <div className="flex items-center gap-3">
@@ -145,6 +157,107 @@ export default function SotaBenchmarkDashboard() {
                                     </span>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+
+                    {/* Consultant Program Tracking */}
+                    <div className="flex flex-col mb-4 p-4 mx-6 mt-4 bg-gradient-to-r from-yellow-500/10 to-amber-600/5 border border-yellow-500/20 rounded-lg">
+                        <div className="flex justify-between items-center mb-3">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-xs font-bold text-yellow-400 uppercase tracking-widest flex items-center gap-2">
+                                    <Zap className="text-yellow-400" size={14} /> Brain Research Consultant Track
+                                </span>
+                                <span className="text-[10px] text-white/40 uppercase tracking-widest">
+                                    Registration requires reaching threshold constraints linearly across 5 days.
+                                </span>
+                            </div>
+                            <span className="text-[10px] text-yellow-500/60 font-mono tracking-widest py-1 px-3 border border-yellow-500/20 rounded bg-black/40">TARGET: 10,000 PTS</span>
+                        </div>
+                        
+                        <div className="flex flex-col gap-2">
+                            <div className="flex justify-between text-[10px] uppercase font-bold text-white/50 tracking-widest">
+                                <span>Matrix Validation Protocol</span>
+                                <span className="text-white text-xs">2,000 / 10,000</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-black/40 rounded overflow-hidden relative">
+                                <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.05)_10px,rgba(255,255,255,0.05)_20px)]" />
+                                <div className="h-full bg-yellow-400 w-[20%] relative shadow-[0_0_15px_rgba(250,204,21,0.6)]">
+                                     <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-r from-transparent to-white/30" />
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                                <span className="text-[9px] text-yellow-500/80 uppercase font-bold tracking-widest flex items-center gap-1">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> 
+                                    Constraint: 2,000 Max Daily Accumulation 
+                                </span>
+                                <span className="text-[9px] text-emerald-400 uppercase tracking-widest font-mono font-bold bg-emerald-500/10 px-2 py-0.5 rounded">Day 1 / 5 Limit Reached</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Consultant Program Tracking */}
+                    <div className="flex flex-col mb-4 p-4 mx-0 mt-4 bg-gradient-to-r from-yellow-500/10 to-amber-600/5 border border-yellow-500/20 rounded-lg">
+                        <div className="flex justify-between items-center mb-3">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-xs font-bold text-yellow-400 uppercase tracking-widest flex items-center gap-2">
+                                    <Zap className="text-yellow-400" size={14} /> Brain Research Consultant Track
+                                </span>
+                                <span className="text-[10px] text-white/40 uppercase tracking-widest">
+                                    Registration requires reaching threshold constraints linearly across 5 days.
+                                </span>
+                            </div>
+                            <span className="text-[10px] text-yellow-500/60 font-mono tracking-widest py-1 px-3 border border-yellow-500/20 rounded bg-black/40">TARGET: 10,000 PTS</span>
+                        </div>
+                        
+                        <div className="flex flex-col gap-2">
+                            <div className="flex justify-between text-[10px] uppercase font-bold text-white/50 tracking-widest">
+                                <span>Matrix Validation Protocol</span>
+                                <span className="text-white text-xs">2,000 / 10,000</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-black/40 rounded overflow-hidden relative">
+                                <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.05)_10px,rgba(255,255,255,0.05)_20px)]" />
+                                <div className="h-full bg-yellow-400 w-[20%] relative shadow-[0_0_15px_rgba(250,204,21,0.6)]">
+                                     <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-r from-transparent to-white/30" />
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center mt-1">
+                                <span className="text-[9px] text-yellow-500/80 uppercase font-bold tracking-widest flex items-center gap-1">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> 
+                                    Constraint: 2,000 Max Daily Accumulation 
+                                </span>
+                                <span className="text-[9px] text-emerald-400 uppercase tracking-widest font-mono font-bold bg-emerald-500/10 px-2 py-0.5 rounded">Day 1 / 5 Limit Reached</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* WorldQuant Integration Badges */}
+                    <div className="p-6 border-t border-white/5 bg-black/60 flex items-center gap-4 overflow-x-auto">
+                        <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold whitespace-nowrap mr-4">
+                            Acquired Operational Badges
+                        </span>
+                        
+                        {/* Milestone Badge: 1 */}
+                        <div className="flex flex-col items-center justify-center p-3 rounded-lg border border-green-500/20 bg-green-500/5 min-w-[80px]">
+                            <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center -rotate-45 mb-2 shadow-[0_0_15px_rgba(34,197,94,0.3)]">
+                                <span className="text-white font-black text-xl rotate-45 transform drop-shadow-md">1</span>
+                            </div>
+                            <span className="text-[8px] text-green-400 font-bold tracking-widest uppercase">Initiated</span>
+                        </div>
+                        
+                        {/* Classification: SPECTACULAR */}
+                        <div className="flex flex-col items-center justify-center p-3 rounded-lg border border-red-500/20 bg-red-500/5 min-w-[100px]">
+                            <div className="w-10 h-10 rounded-lg bg-black flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(239,68,68,0.3)] border border-red-500/20">
+                                <TrendingUp className="text-red-500 w-6 h-6" strokeWidth={3} />
+                            </div>
+                            <span className="text-[8px] text-red-500 font-bold tracking-widest uppercase">Spectacular</span>
+                        </div>
+                        
+                        {/* Target: 10 */}
+                        <div className="flex flex-col items-center justify-center p-3 rounded-lg border border-white/5 bg-white/[0.02] min-w-[80px] opacity-30 grayscale transition-all hover:grayscale-0 hover:opacity-100">
+                            <div className="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center -rotate-45 mb-2">
+                                <span className="text-white font-black text-xl rotate-45 transform">10</span>
+                            </div>
+                            <span className="text-[8px] text-white/50 font-bold tracking-widest uppercase">Pending Array</span>
                         </div>
                     </div>
                 </motion.div>

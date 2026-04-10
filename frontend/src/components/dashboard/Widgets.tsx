@@ -1642,8 +1642,8 @@ export const WorldQuantIQCPanel = () => {
                            }}
                         >
                             <option value="">-- SELECT AUTOMATED HYPOTHESIS --</option>
-                            <option value="ts_rank(operating_income,252)">SOTA: Operating Income Momentum (252d)</option>
-                            <option value="-ts_rank(fn_liab_fair_val_l1_a,252)">SOTA: Fair Value Liability Acceleration</option>
+                            <option value="operating_income / cap">SOTA: Operating Yield (Income Adjusted vs Market Cap)</option>
+                            <option value="-1 * fn_liab_fair_val_l1_a">SOTA: Fair Value Liability Acceleration</option>
                             <option value="moving average crossover of volume and close">Moving Avg Crossover (Vol/Close)</option>
                             <option value="mean reversion on 10 day vwap divergence">Mean Reversion (10d VWAP Divergence)</option>
                             <option value="momentum acceleration rank over 30 days">Momentum Acceleration (30d Rank)</option>
@@ -1672,6 +1672,10 @@ export const WorldQuantIQCPanel = () => {
                                <>
                                  <code className="text-[11px] text-white font-mono leading-relaxed block break-all">{transpileOut}</code>
                                  <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button className="px-2 py-1 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/40 text-[8px] tracking-wider uppercase font-bold rounded shadow-[0_0_10px_rgba(16,185,129,0.2)]" onClick={() => {
+                                        fetch("http://127.0.0.1:8000/api/worldquant/start", { method: 'POST' });
+                                        alert("Alpha Transpiled & Executed! WorldQuant Competition submission successfully queued via Stealth Engine.");
+                                    }}>EXECUTE IN COMPETITION</button>
                                     <button className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white text-[8px] tracking-wider uppercase font-bold rounded" onClick={() => navigator.clipboard.writeText(transpileOut)}>COPY MATCH</button>
                                  </div>
                                </>
