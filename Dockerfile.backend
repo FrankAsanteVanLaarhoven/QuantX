@@ -1,27 +1,25 @@
-FROM python:3.11-slim
+FROM python:3.11
 
 WORKDIR /app
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Copy only the backend environment configuration
+COPY backend/requirements.txt .
 
-COPY requirements.txt .
-
+# Install dependencies rapidly
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Additional numerical backend for deep matrix operations
+# Additional numerical backend for deep matrix operations required by QuantX
 RUN pip install --no-cache-dir uvicorn fastapi numpy pandas yfinance google-genai
 
-# Install Playwright browser binaries and OS dependencies
+# Install Playwright browser binaries and OS dependencies natively
 RUN playwright install chromium
 RUN playwright install-deps chromium
 
-COPY . .
+# Copy the backend application logic
+COPY backend/ .
 
-# Expose FastAPI
+# Expose FastAPI Port
 EXPOSE 8000
 
+# Execute the local web gateway
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
