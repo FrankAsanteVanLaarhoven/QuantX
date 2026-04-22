@@ -1,9 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './page.module.css';
 
 export default function CorporatePage() {
+  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+
   return (
     <div className={styles.container}>
         {/* Animated Synthethic Grid Layer */}
@@ -75,9 +78,41 @@ export default function CorporatePage() {
             <p className={styles.subtitle} style={{ marginBottom: '1rem'}}>
                 Reserve your slot for the closed beta deployment of QuantX Phase II.
             </p>
-            <form className={styles.waitlistForm} onSubmit={(e) => e.preventDefault()}>
-                <input type="email" placeholder="institutional@email.com" className={styles.inputField} required />
-                <button type="submit" className={styles.primaryBtn}>Initialize</button>
+            <form className={styles.waitlistForm} onSubmit={async (e) => {
+                e.preventDefault();
+                setStatus('submitting');
+                try {
+                    const res = await fetch("http://127.0.0.1:8000/api/waitlist/join", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: waitlistEmail })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        setStatus('success');
+                        setWaitlistEmail('');
+                        alert(data.message);
+                    } else {
+                        setStatus('error');
+                        alert(data.detail || "Failed to join waitlist");
+                    }
+                } catch (err) {
+                    setStatus('error');
+                    alert("Network Error: Could not connect to QuantX backend.");
+                }
+            }}>
+                <input 
+                    type="email" 
+                    placeholder="institutional@email.com" 
+                    className={styles.inputField} 
+                    required 
+                    value={waitlistEmail}
+                    onChange={(e) => setWaitlistEmail(e.target.value)}
+                    disabled={status === 'submitting'}
+                />
+                <button type="submit" className={styles.primaryBtn} disabled={status === 'submitting'}>
+                    {status === 'submitting' ? 'Initializing...' : 'Initialize'}
+                </button>
             </form>
         </section>
     </div>
